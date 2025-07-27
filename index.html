@@ -1,11 +1,32 @@
 <!DOCTYPE html>
+<!--2025.7.27-->
 <html lang="zh-CN">
 <head>
 	<meta charset="UTF-8">
 	<title>首页 - 红蓝灯的个人网站</title>
+	<script src="include/prism.js"></script>
+	<link href="include/prism.css" rel="stylesheet">
 </head>
-<body>
-	<p>警告！本网站处于测试阶段！</p>
-	<p>Warning! Page is test!</p>
+<body class="line-numbers">
+	<p class="chinese">警告！本网站处于测试阶段！</p>
+	<p class="english">Warning! Page is test!</p>
+	<pre><code class="language-python">print("hi")
+import tkinter</code></pre>
+	<style>
+		@font-face {
+			font-family: "JetBrains Mono";
+			src: url("JetBrainsMono.ttf") format("truetype");
+		}
+
+		.chinese {
+			font-family: Tahoma;
+		}
+		.english {
+			font-family: "JetBrains Mono";
+		}
+		.code {
+			font-family: "JetBrains Mono";
+		}
+	</style>
 </body>
 </html>
