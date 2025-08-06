@@ -1,0 +1,12 @@
+# -*- conding: utf-8 -*-
+# 2025.8.6
+
+# Dir
+.idea/
+.vscode/
+
+# File
+.DS_Store
+thumbs.db
+.iml
+.cache
