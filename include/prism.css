@@ -18,7 +18,7 @@ pre[class*="language-"] {
 	text-shadow: 0 -.1em .2em black;
 	font-size: 1em;
 	text-align: left;
-	font-family: "JetBrains Mono";
+	font-family: "JetBrains Mono",system-ui;
 	white-space: pre;
 	word-spacing: normal;
 	word-break: normal;

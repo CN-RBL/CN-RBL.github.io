@@ -1,5 +1,6 @@
-<!DOCTYPE html>
+<!-- -*- conding: utf-8 -*- -->
 <!--2025.7.27-->
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 	<meta charset="UTF-8">
@@ -15,17 +16,27 @@ import tkinter</code></pre>
 	<style>
 		@font-face {
 			font-family: "JetBrains Mono";
-			src: url("JetBrainsMono.ttf") format("truetype");
+			src: url("include/JetBrainsMono.ttf") format("truetype");
 		}
 
+        body {
+            background-image: url("include/bg.jpg");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            min-height: 100%;
+            background-color: #555555; /*避免无法加载导致出现纯白 Avoid failing to load and resulting in pure white*/
+        }
+
 		.chinese {
-			font-family: Tahoma;
+			font-family: Tahoma,system-ui;
 		}
 		.english {
-			font-family: "JetBrains Mono";
+			font-family: "JetBrains Mono",system-ui;
 		}
 		.code {
-			font-family: "JetBrains Mono";
+			font-family: "JetBrains Mono",system-ui;
 		}
 	</style>
 </body>
