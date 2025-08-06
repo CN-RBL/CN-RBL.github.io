@@ -4,9 +4,14 @@
 # Dir
 .idea/
 .vscode/
+.history/
 
 # File
 .DS_Store
+.DS_Store?
+._*
+ehtumbs.db
 thumbs.db
 .iml
 .cache
+test*
