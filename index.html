@@ -4,6 +4,25 @@
 <html lang="zh-CN">
 <head>
 	<meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="红蓝灯">
+    <meta name="keywords" content="红蓝灯, RBL">
+    <script>
+        function isIE() {
+            return !!document.documentMode;
+        }
+        if (isIE()) {
+            window.alert("检测到为IE浏览器，即将跳转到Edge下载界面...");
+            console.warn("用户使用IE浏览器");
+            location.href("https://www.microsoft.com/zh-cn/edge/download");
+        } else {
+            console.info("用户使用非IE浏览器");
+        }
+    </script>
+    <meta name="author" content="这里是红蓝灯的个人网站，时不时发点文章">
 	<title>首页 - 红蓝灯的个人网站</title>
 	<script src="include/prism.js"></script>
 	<link href="include/prism.css" rel="stylesheet">
@@ -11,6 +30,7 @@
 <body class="line-numbers">
 	<p class="chinese">警告！本网站处于测试阶段！</p>
 	<p class="english">Warning! Page is test!</p>
+    <script>window.alert("TEST!")</script>
 	<pre><code class="language-python">print("hi")
 import tkinter</code></pre>
 	<style>
@@ -35,7 +55,7 @@ import tkinter</code></pre>
 		.english {
 			font-family: "JetBrains Mono",system-ui;
 		}
-		.code {
+		code {
 			font-family: "JetBrains Mono",system-ui;
 		}
 	</style>
