@@ -10,6 +10,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="红蓝灯">
     <meta name="keywords" content="红蓝灯, RBL">
+    <meta http-equiv="Content-Language" content="zh-CN">
+    <meta name="robots" content="all">
     <script>
         function isIE() {
             return !!document.documentMode;
@@ -17,47 +19,64 @@
         if (isIE()) {
             window.alert("检测到为IE浏览器，即将跳转到Edge下载界面...");
             console.warn("用户使用IE浏览器");
-            location.href = "https://www.microsoft.com/zh-cn/edge/download";
+            setTimeout(() =>{location.href = "https://www.microsoft.com/zh-cn/edge/download";}, 500);
         } else {
             console.info("用户使用非IE浏览器");
         }
     </script>
-    <meta name="author" content="这里是红蓝灯的个人网站，时不时发点文章">
+    <meta name="description" content="这里是红蓝灯的个人网站，时不时发点文章">
     <title>首页 - 红蓝灯的个人网站</title>
     <script src="include/prism.js"></script>
     <link href="include/prism.css" rel="stylesheet">
-</head>
-<body class="line-numbers">
-    <p class="chinese">警告！本网站处于测试阶段！</p>
-    <p class="english">Warning! Page is test!</p>
-    <pre><code class="language-python">print("hi")
-import tkinter as tk
-</code></pre>
     <style>
-        @font-face {  
-            font-family: "JetBrains Mono";  
-            src: url("include/JetBrainsMono.ttf") format("truetype");  
+        @font-face {
+            font-family: "JetBrains Mono";
+            src: url("include/JetBrainsMono.ttf") format("truetype");
+        }
+
+        :root {
+            --9_6-color: #999999;
+            --5_6-color: #555555;
+            --mono-font: "JetBrains Mono";
+            --tahoma: Tahoma;
+            --bg-img: url("include/bg.jpg");
         }
 
         body {
-            background-image: url("include/bg.jpg");
+            background-image: var(--bg-img);
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center center;
             background-attachment: fixed;
             min-height: 100%;
-            background-color: #555555; /*避免无法加载导致出现纯白 Avoid failing to load and resulting in pure white*/
+            background-color: var(--5_6-color,#555555); /*避免无法加载导致出现纯白 Avoid failing to load and resulting in pure white*/
         }
 
         .chinese {
-            font-family: Tahoma,system-ui;
+            font-family: var(--tahoma),system-ui;
+            color: var(--9_6-color,#999999);
         }
         .english {
-            font-family: "JetBrains Mono",system-ui;
+            font-family: var(--mono-font), system-ui;
+            color: var(--9_6-color,#999999);
         }
-        code {
-            font-family: "JetBrains Mono",system-ui;
+        code pre {
+            font-family: var(--mono-font),system-ui;
         }
     </style>
+</head>
+<body class="line-numbers">
+    <p class="chinese">警告！本网站处于测试阶段！</p>
+    <p class="english">Warning! Page is test!</p>
+    <pre><code class="language-python">print("Hello World!")
+</code></pre>
+    <pre><code class="language-cpp">#include &lt;iostream&gt;
+using namespace std;
+int main()
+{
+    cout &lt;&lt; "Hello World!" &lt;&lt; endl;
+    return 0;
+}
+</code></pre>
 </body>
 </html>
