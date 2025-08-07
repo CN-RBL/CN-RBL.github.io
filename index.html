@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-	<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="renderer" content="webkit">
     <meta name="force-rendering" content="webkit">
@@ -17,27 +17,27 @@
         if (isIE()) {
             window.alert("检测到为IE浏览器，即将跳转到Edge下载界面...");
             console.warn("用户使用IE浏览器");
-            location.href("https://www.microsoft.com/zh-cn/edge/download");
+            location.href = "https://www.microsoft.com/zh-cn/edge/download";
         } else {
             console.info("用户使用非IE浏览器");
         }
     </script>
     <meta name="author" content="这里是红蓝灯的个人网站，时不时发点文章">
-	<title>首页 - 红蓝灯的个人网站</title>
-	<script src="include/prism.js"></script>
-	<link href="include/prism.css" rel="stylesheet">
+    <title>首页 - 红蓝灯的个人网站</title>
+    <script src="include/prism.js"></script>
+    <link href="include/prism.css" rel="stylesheet">
 </head>
 <body class="line-numbers">
-	<p class="chinese">警告！本网站处于测试阶段！</p>
-	<p class="english">Warning! Page is test!</p>
-    <script>window.alert("TEST!")</script>
-	<pre><code class="language-python">print("hi")
-import tkinter</code></pre>
-	<style>
-		@font-face {
-			font-family: "JetBrains Mono";
-			src: url("include/JetBrainsMono.ttf") format("truetype");
-		}
+    <p class="chinese">警告！本网站处于测试阶段！</p>
+    <p class="english">Warning! Page is test!</p>
+    <pre><code class="language-python">print("hi")
+import tkinter as tk
+</code></pre>
+    <style>
+        @font-face {  
+            font-family: "JetBrains Mono";  
+            src: url("include/JetBrainsMono.ttf") format("truetype");  
+        }
 
         body {
             background-image: url("include/bg.jpg");
@@ -49,15 +49,15 @@ import tkinter</code></pre>
             background-color: #555555; /*避免无法加载导致出现纯白 Avoid failing to load and resulting in pure white*/
         }
 
-		.chinese {
-			font-family: Tahoma,system-ui;
-		}
-		.english {
-			font-family: "JetBrains Mono",system-ui;
-		}
-		code {
-			font-family: "JetBrains Mono",system-ui;
-		}
-	</style>
+        .chinese {
+            font-family: Tahoma,system-ui;
+        }
+        .english {
+            font-family: "JetBrains Mono",system-ui;
+        }
+        code {
+            font-family: "JetBrains Mono",system-ui;
+        }
+    </style>
 </body>
 </html>
