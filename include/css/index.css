@@ -1,36 +1,115 @@
-@font-face {
-    font-family: "JetBrains Mono";
-    src: url("../JetBrainsMono.ttf") format("truetype");
-}
+/* index.css — 整理自 inline styles
+   目标：合并重复规则、使用变量、格式化并删除空规则。 */
 
 :root {
-    --9_6-color: #999999;
-    --5_6-color: #555555;
+    --page-width: 65%;
+    --page-margin: 15%;
+    --card-bg: rgba(0, 0, 0, 0.5);
+    --card-radius: 25px;
+    --card-padding: 1% 2% 2%;
+    --card-padding-bottom: 2.5%;
+    --backdrop: blur(5px);
+    --muted: #999999;
+    --muted-dark: #555555;
     --mono-font: "JetBrains Mono";
-    --tahoma-font: Tahoma;
+    --tahoma-font: Tahoma, system-ui, sans-serif;
     --bg-img: url("../bg.jpg");
 }
 
+/* 布局 */
 body {
+    margin: 0;
     background-image: var(--bg-img);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed;
-    min-height: 100%;
-    background-color: var(--5_6-color);
+    min-height: 100vh;
+    background-color: var(--muted-dark);
+}
+
+body.line-numbers {
+    min-height: 100vh;
+}
+
+/* 主体和版权块共享的“毛玻璃”样式 */
+#main,
+#copyright {
+    display: table-cell;
+    position: absolute;
+    width: var(--page-width);
+    margin-left: var(--page-margin);
+    margin-right: var(--page-margin);
+    padding: var(--card-padding);
+    border-radius: var(--card-radius);
+    background: var(--card-bg);
+    backdrop-filter: var(--backdrop);
+}
+
+/* main 特有 */
+#main {
+    top: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        /* 保留滚动条空间以避免布局跳动 */
+        scrollbar-gutter: stable both-edges;
+        /* 始终显示（当无内容时会显示空的滚动条轨道） */
+        height: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: var(--gap-between);
+    max-height: 75%;
+
+    /* 自定义滚动条（WebKit / Blink） */
+    #main::-webkit-scrollbar {
+        width: 12px;
+    }
+    #main::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.03);
+        border-radius: 6px;
+    }
+    #main::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.12);
+        border-radius: 6px;
+    }
+    /* Firefox */
+    #main {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.12) rgba(255,255,255,0.03);
+    }
+}
+
+/* copyright 特有 */
+#copyright {
+    bottom: 0;
+    min-height: 5%;
+    margin-top: 2.5%;
+    padding: 1% 2% var(--card-padding-bottom);
+    height: auto;
+}
+
+#copyright p {
+    text-align: center;
+    margin: 0;
+}
+
+/* 文本样式 */
+@font-face {
+    font-family: "JetBrains Mono";
+    src: url("../JetBrainsMono.ttf") format("truetype");
 }
 
 .chinese {
-    font-family: var(--tahoma-font),system-ui;
-    color: var(--9_6-color);
+    font-family: var(--tahoma-font);
+    color: var(--muted);
 }
 
 .english {
     font-family: var(--mono-font), system-ui;
-    color: var(--9_6-color);
+    color: var(--muted);
 }
 
-code pre {
-    font-family: var(--mono-font),system-ui;
+code,
+pre {
+    font-family: var(--mono-font), system-ui;
 }
+
