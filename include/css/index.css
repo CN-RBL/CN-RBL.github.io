@@ -1,0 +1,36 @@
+@font-face {
+    font-family: "JetBrains Mono";
+    src: url("../JetBrainsMono.ttf") format("truetype");
+}
+
+:root {
+    --9_6-color: #999999;
+    --5_6-color: #555555;
+    --mono-font: "JetBrains Mono";
+    --tahoma-font: Tahoma;
+    --bg-img: url("../bg.jpg");
+}
+
+body {
+    background-image: var(--bg-img);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    min-height: 100%;
+    background-color: var(--5_6-color);
+}
+
+.chinese {
+    font-family: var(--tahoma-font),system-ui;
+    color: var(--9_6-color);
+}
+
+.english {
+    font-family: var(--mono-font), system-ui;
+    color: var(--9_6-color);
+}
+
+code pre {
+    font-family: var(--mono-font),system-ui;
+}
