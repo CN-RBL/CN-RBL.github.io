@@ -14,11 +14,9 @@
     <title>404 - 红蓝灯的个人网站</title>
     <script>
         function random_err() {
-            let cn_errs = ["404 找不到页面", "404 你的页面去玩蛋仔派对了，我找不到他", "404 你的页面去玩MC了，我找不到他"]
-            let en_errs = ["404 No Page Found", "404 Your Page Went To The Eggy Party, I Can't Find Him", "404 Your Page Went To The Minecraft, I Can't Find Him"]
+            let cn_errs = ["找不到页面", "你的页面去玩蛋仔派对了，我找不到他", "你的页面去玩MC了，我找不到他"]
+            let en_errs = ["No Page Found", "Your Page Went To The Eggy Party, I Can't Find Him", "Your Page Went To The Minecraft, I Can't Find Him"]
             let random_index = Math.floor(Math.random() * cn_errs.length);
-            let random_word_cn = cn_errs[random_index];
-            let random_word_en = en_errs[random_index];
             document.getElementById("cn_err").innerHTML = cn_errs[random_index];
             document.getElementById("en_err").innerHTML = en_errs[random_index];
         }
@@ -55,13 +53,15 @@
             color: #999999;
         }
     </style>
+    <link href="include/css/index.css" rel="stylesheet">
 </head>
 <body>
-    <div id="main" style="margin-left: 15%;margin-right: 15%;padding: 1% 2% 2%;border-radius: 25px;background: rgba(0, 0, 0, 0.5);backdrop-filter: blur(5px);">
+    <div id="main">
+        <h1 class="english" style="text-align: center;">4 0 4</h1>
         <p class="chinese" id="cn_err">404 找不到页面</p>
         <p class="english" id="en_err">404 No Page Found</p>
     </div>
-    <div id="copyright" style="margin-left: 15%;margin-right: 15%;margin-top: 2.5%;padding: 1% 2% 2.5%;border-radius: 25px;background: rgba(0, 0, 0, 0.5);backdrop-filter: blur(5px);">
+    <div id="copyright">
         <p class="chinese" style="text-align: center;">© 2026 红蓝灯 保留所有权利</p>
         <p class="english" style="text-align: center;">© 2026 RBL All Rights Reserved</p>
     </div>

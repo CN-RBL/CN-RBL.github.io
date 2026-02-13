@@ -32,50 +32,55 @@ body.line-numbers {
     min-height: 100vh;
 }
 
-/* 主体和版权块共享的“毛玻璃”样式 */
+/* 主体和版权块共享的“毛玻璃”样式（水平居中） */
 #main,
 #copyright {
-    display: table-cell;
+    /* 使用固定左右留白以确保两侧间距一致且不超过视口 */
+    display: block;
     position: absolute;
-    width: var(--page-width);
-    margin-left: var(--page-margin);
-    margin-right: var(--page-margin);
+    left: var(--page-margin);
+    right: var(--page-margin);
     padding: var(--card-padding);
     border-radius: var(--card-radius);
     background: var(--card-bg);
     backdrop-filter: var(--backdrop);
+    box-sizing: border-box;
 }
 
 /* main 特有 */
 #main {
     top: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
-        /* 保留滚动条空间以避免布局跳动 */
-        scrollbar-gutter: stable both-edges;
-        /* 始终显示（当无内容时会显示空的滚动条轨道） */
-        height: auto !important;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: var(--gap-between);
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* 保留滚动条空间以避免布局跳动 */
+    scrollbar-gutter: stable both-edges;
+    /* 平滑滚动（移动设备） */
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: var(--gap-between);
     max-height: 75%;
+    box-sizing: border-box;
+}
 
-    /* 自定义滚动条（WebKit / Blink） */
-    #main::-webkit-scrollbar {
-        width: 12px;
-    }
-    #main::-webkit-scrollbar-track {
-        background: rgba(255,255,255,0.03);
-        border-radius: 6px;
-    }
-    #main::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.12);
-        border-radius: 6px;
-    }
-    /* Firefox */
-    #main {
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255,255,255,0.12) rgba(255,255,255,0.03);
-    }
+/* 移除基于内边距的居中实现，使用显式宽度 + 左右留白 */
+
+/* 自定义滚动条（WebKit / Blink）——更细的样式 */
+#main::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+#main::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.02);
+    border-radius: 4px;
+}
+#main::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.10);
+    border-radius: 4px;
+}
+
+/* Firefox */
+#main {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.10) rgba(255,255,255,0.02);
 }
 
 /* copyright 特有 */
