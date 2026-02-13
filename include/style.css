@@ -1,0 +1,142 @@
+:root {
+    /* 尺寸 */
+    --page-width: 65%;
+    --page-margin: 15%;
+
+    /* 导航 */
+    --nav-height: 56px;
+    --nav-gap: 0; /* 0 表示紧贴 nav */
+
+    /* 间距 */
+    --gap-between: 5px; /* main 与 copyright 的间距 */
+    --copyright-min: 5vh; /* 版权区最小高度（用于计算） */
+
+    /* 视觉 */
+    --card-bg: rgba(0,0,0,0.5);
+    --card-radius: 25px;
+    --card-padding: 1% 2% 2%;
+    --card-padding-bottom: 2.5%;
+    --backdrop: blur(5px);
+    --muted: #999999;
+    --muted-dark: #555555;
+
+    /* 字体 */
+    --mono-font: "JetBrains Mono";
+    --tahoma-font: Tahoma, system-ui, sans-serif;
+
+    /* 背景图 */
+    --bg-img: url("bg.jpg");
+}
+
+/* 基础布局与盒模型 */
+html { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: inherit; }
+
+body {
+    margin: 0;
+    /* 为固定导航在文档流中预留空间，防止覆盖内容 */
+    padding-top: calc(var(--nav-height) + var(--nav-gap));
+    background-image: var(--bg-img);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    background-color: var(--muted-dark);
+    /* 禁止页面整体垂直滚动，#main 内滚 */
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+body.line-numbers { min-height: 100vh; }
+
+/* 公共卡片外观（毛玻璃） */
+#main, #copyright, #notice {
+    display: block;
+    background: var(--card-bg);
+    backdrop-filter: var(--backdrop);
+    border-radius: var(--card-radius);
+    padding: var(--card-padding);
+    box-sizing: border-box;
+}
+
+/* 顶部导航（固定） */
+#topnav {
+    position: fixed;
+    left: var(--page-margin);
+    right: var(--page-margin);
+    top: 0;
+    height: var(--nav-height);
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: var(--backdrop);
+    border-radius: calc(var(--card-radius) / 2);
+    /* 移除底部圆角，避免与下面内容边缘重叠 */
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    z-index: 60;
+    box-sizing: border-box;
+}
+
+#topnav .nav-inner { display:flex; gap:1rem; align-items:center; width:100%; }
+#topnav a { color: var(--muted); text-decoration:none; padding:0.4rem 0.6rem; transition: color .15s ease, text-shadow .2s ease; }
+#topnav a:hover { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.85), 0 0 16px rgba(255,255,255,0.5); }
+
+/* 占位器：用于在文档流中为固定导航预留空间，避免覆盖后续内容 */
+#nav-spacer { height: var(--nav-height); margin: 0 var(--page-margin); pointer-events: none; }
+
+/* 主内容：流式布局，顶部紧贴导航，内部滚动 */
+#main {
+    width: auto;
+    /* 移除顶部圆角，避免与固定导航圆角叠加 */
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    /* 顶部间距由 body 的 padding-top 提供，避免重叠 */
+    margin-top: 0;
+    padding-top: 0;
+    margin-left: var(--page-margin);
+    margin-right: var(--page-margin);
+    margin-bottom: calc(var(--copyright-min) + var(--gap-between));
+    max-width: calc(100% - 2 * var(--page-margin));
+    overflow-y: auto;   /* 内部滚动 */
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable both-edges;
+    padding-bottom: var(--gap-between);
+    /* 可用高度 = 视口 - 导航高度 - 版权最小高度 - 间隙 */
+    max-height: calc(100vh - var(--nav-height) - var(--copyright-min) - var(--gap-between));
+    z-index: 10;
+}
+
+/* 滚动条样式（仅影响 #main） */
+#main::-webkit-scrollbar { width:8px; height:8px; }
+#main::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius:4px; }
+#main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius:4px; }
+#main { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.10) rgba(255,255,255,0.02); }
+
+/* 版权区（固定底部） */
+#copyright {
+    position: fixed;
+    left: var(--page-margin);
+    right: var(--page-margin);
+    bottom: 0;
+    min-height: var(--copyright-min);
+    padding: 1% 2% var(--card-padding-bottom);
+    z-index: 30;
+}
+
+#copyright p { text-align:center; margin:0; }
+
+/* 字体 & 文本 */
+@font-face{ font-family: "JetBrains Mono"; src: url("JetBrainsMono.ttf") format("truetype"); }
+.chinese{ font-family: var(--tahoma-font); color: var(--muted); }
+.english{ font-family: var(--mono-font), system-ui; color: var(--muted); }
+code, pre{ font-family: var(--mono-font), system-ui; }
+
+/* 使带 class="chinese" 的有序/无序列表整体居中，且点/序号与文本一起居中显示 */
+ul {
+    margin: 0 auto;
+    width: fit-content;
+}

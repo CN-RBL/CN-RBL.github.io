@@ -12,60 +12,40 @@
     <meta name="keywords" content="红蓝灯, RBL">
     <meta http-equiv="Content-Language" content="zh-CN">
     <meta name="robots" content="all">
-    <script>
-        function isIE() {return !!document.documentMode;}
-        if (isIE()) {
-            window.alert("检测到为IE浏览器，即将跳转到Edge下载界面...");
-            console.warn("用户使用IE浏览器");
-            setTimeout(() =>{location.href = "https://www.microsoft.com/zh-cn/edge/download";}, 500);
-        } else {
-            console.info("用户使用非IE浏览器");
-        }
-    </script>
     <meta name="description" content="这里是红蓝灯的个人网站，时不时发点文章">
     <title>首页 - 红蓝灯的个人网站</title>
     <script src="include/prism.js"></script>
     <link href="include/prism.css" rel="stylesheet">
-    <link href="include/css/index.css" rel="stylesheet">
+    <link href="include/style.css" rel="stylesheet">
 </head>
 <body class="line-numbers">
+    <nav id="topnav">
+        <div class="nav-inner">
+            <a href="index.html">首页</a>
+            <a href="download.html">下载</a>
+            <a href="articles.html">文章</a>
+            <a href="about.html">关于</a>
+            <a href="https://github.com/CN-RBL" target="_blank">我的GitHub</a>
+            <a href="https://space.bilibili.com/3546389388724715" target="_blank">我的B站</a>
+        </div>
+    </nav>
+    <div id="nav-spacer" aria-hidden="true"></div>
     <div id="main">
-        <p class="chinese">警告！本网站处于测试阶段！</p>
-        <p class="english">Warn! This site is in beta!</p>
-        <pre><code class="language-python">print("Hello World!")
-</code></pre>
-        <pre><code class="language-cpp">#include &lt;iostream&gt;
-using namespace std;
-int main()
-{
-    cout &lt;&lt; "Hello World!" &lt;&lt; endl;
-    return 0;
-}</code></pre>
-        <pre><code class="language-java">public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello World!");
-    }
-}</code></pre>
-
-    <br/>
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-    11
-    12
-    13
-    14
-    15
-    16
+        <h1 class="chinese" style="text-align: center;">Ciallo～(∠・ω< )⌒☆</h1>
+        <p class="chinese" style="text-align: center;">这里是RBL的Web小窝！在这里，你可以：</p>
+        <ul class="chinese">
+            <li>下载我开发的各种软件</li>
+            <li>阅读我写的各种文章</li>
+            <li>了解我的一些个人信息</li>
+            <li>偷吃我Github的项目</li>
+            <li>关注我的B站，看看我都在干什么</li>
+            <li>还有…</li>
+        </ul>
+        <br/>
+        <div id="notice">
+            <h3 class="chinese" style="text-align: center;">公告</h3>
+        </div>
     </div>
-    <br/>
     <div id="copyright">
         <p class="chinese">© 2026 红蓝灯 保留所有权利</p>
         <p class="english">© 2026 RBL All Rights Reserved</p>
