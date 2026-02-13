@@ -133,6 +133,7 @@ body.line-numbers { min-height: 100vh; }
 @font-face{ font-family: "JetBrains Mono"; src: url("JetBrainsMono.ttf") format("truetype"); }
 .chinese{ font-family: var(--tahoma-font); color: var(--muted); }
 .english{ font-family: var(--mono-font), system-ui; color: var(--muted); }
+.funny:active { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.85), 0 0 16px rgba(255,255,255,0.5); }
 code, pre{ font-family: var(--mono-font), system-ui; }
 
 /* 使带 class="chinese" 的有序/无序列表整体居中，且点/序号与文本一起居中显示 */
