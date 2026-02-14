@@ -1,9 +1,10 @@
 # -*- conding: utf-8 -*-
-# 2025.8.6
+# 2026.2.14
 
 # Dir
 .idea/
 .vscode/
+.venv/
 .history/
 
 # File

@@ -137,7 +137,6 @@ body.line-numbers { min-height: 100vh; }
 code, pre{ font-family: var(--mono-font), system-ui; }
 
 /* 使带 class="chinese" 的有序/无序列表整体居中，且点/序号与文本一起居中显示 */
-ul {
-    margin: 0 auto;
-    width: fit-content;
-}
+ul { margin: 0 auto;width: fit-content; }
+
+.no_print { display: none; }
