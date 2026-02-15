@@ -275,7 +275,7 @@ def main() -> int:
     )
     if not update_article_list.lower() in ["y", "yes"]:
         return 0
-    logging.info("Starting article list update process.")
+        logging.info("Starting article list update process.")
     gc.collect()  # 强制垃圾回收，释放内存
     success_count = 0
     fail_count = 0
@@ -304,38 +304,149 @@ def main() -> int:
     ):
         logging.error(f'Article list path is not a HTML file: "{article_list_path}"')
         return 1
-    title_list = []
-    path_list = []
-    for path in os.listdir(article_dir):
+
+    # 收集所有文章信息（标题和路径）
+    articles = []  # 列表元素为 (title, path)
+    for filename in os.listdir(article_dir):
         try:
-            if path.endswith(".html") or path.endswith(".htm"):
-                article_path = os.path.join(article_dir, path)
-                path_list.append(article_path)
-                logging.info(f"Processing article: {article_path}")
-                with open(article_path, "r", encoding="utf-8") as f:
-                    article_content = f.read()
-                title_els = html2.fromstring(article_content).xpath(".//h1")
-                title_list.append(title_els[0].text_content() if title_els else "Untitled")
+            if not (filename.endswith(".html") or filename.endswith(".htm")):
+                continue
+            article_path = os.path.join(article_dir, filename)
+            logging.info(f"Processing article: {article_path}")
+            with open(article_path, "r", encoding="utf-8") as f:
+                article_content = f.read()
+            title_els = html2.fromstring(article_content).xpath(".//h1")
+            title = title_els[0].text_content() if title_els else "Untitled"
+            articles.append((title, article_path))
         except Exception as e:
-            logging.error(f"Failed to process article {path}: {e}")
+            logging.error(f"Failed to process article {filename}: {e}")
             fail_count += 1
-    if not title_list:
+
+    if not articles:
         logging.error("No valid articles found to update the list.")
         return 1
-    for title in title_list:
-        try:
-            title_list.append(f"<div class=\"card\">\n<a href={os.path.relpath(path_list[title_list.index(title)], os.path.dirname(article_list_path))}>{title}</a></div>")
-            title_list.remove(title)
-        except Exception as e:
-            logging.error(f"Failed to create card for title {title}: {e}")
-            fail_count += 1
-        else:
-            success_count += 1
-    title_list.sort()
-    with open(article_list_path, "r", encoding="utf-8") as f:
-        list_content = f.read()
-    with open(article_list_path, "w", encoding="utf-8") as f:
-        f.write(pretty_print_html(list_content.replace("%%cards%%", "\n".join(title_list))))
+
+    # 按标题排序
+    articles.sort(key=lambda x: x[0])
+
+    # 生成卡片列表（每个卡片是一个div）
+    cards = []
+    base_dir = os.path.dirname(article_list_path)
+    for title, path in articles:
+        rel_path = os.path.relpath(path, base_dir)
+        card = f'<div class="card"><a href="{rel_path}">{title}</a></div>'
+        cards.append(card)
+    card_html = "\n".join(cards)
+
+    # 读取文章列表文件，解析为HTML树
+    try:
+        with open(article_list_path, "r", encoding="utf-8") as f:
+            list_content = f.read()
+        tree = html2.document_fromstring(list_content)
+    except Exception as e:
+        logging.error(f"Failed to parse article list file: {e}")
+        return 1
+
+    # 删除所有 class 包含 "card" 的 div 元素
+    for card_div in tree.xpath('//div[contains(@class, "card")]'):
+        parent = card_div.getparent()
+        if parent is not None:
+            parent.remove(card_div)
+            logging.debug("Removed an existing card div.")
+
+    # 查找占位符 %%card%% 所在的文本节点
+    placeholder_found = False
+    for element in tree.iter():
+        if element.text and "%%card%%" in element.text:
+            # 将文本节点中的占位符替换为生成的卡片HTML（解析为元素后插入）
+            before, after = element.text.split("%%card%%", 1)
+            element.text = before or None  # 前半部分保留为text
+            # 将卡片字符串解析为元素列表
+            card_fragments = html2.fragments_fromstring(card_html)
+            # 在当前位置插入卡片元素
+            pos = 0
+            for frag in card_fragments:
+                if isinstance(frag, str):
+                    # 文本节点不能直接插入，需作为tail或新元素处理
+                    # 简单起见，将卡片整体作为HTML插入一个占位注释，然后替换
+                    # 但更好的方法是直接使用后续的replace逻辑
+                    pass
+                else:
+                    element.insert(pos, frag)
+                    pos += 1
+            # 处理剩余部分
+            if after:
+                # 如果after非空，作为tail添加到最后一个卡片元素，或创建新文本节点
+                if card_fragments:
+                    last = card_fragments[-1]
+                    if isinstance(last, str):
+                        # 理论上不会出现
+                        pass
+                    else:
+                        if last.tail:
+                            last.tail = after + last.tail
+                        else:
+                            last.tail = after
+                else:
+                    # 如果没有卡片，直接设置element的tail
+                    element.tail = after
+            placeholder_found = True
+            logging.debug("Replaced placeholder %%card%% with cards.")
+            break
+        if element.tail and "%%card%%" in element.tail:
+            # 处理tail中的占位符
+            parent = element.getparent()
+            if parent is None:
+                continue
+            before, after = element.tail.split("%%card%%", 1)
+            element.tail = before or None
+            # 创建卡片元素列表
+            card_fragments = html2.fragments_fromstring(card_html)
+            # 插入到element之后
+            idx = list(parent).index(element)
+            for i, frag in enumerate(card_fragments):
+                if isinstance(frag, str):
+                    # 文本节点作为新的元素插入？实际上fragments_fromstring返回的字符串通常是空白
+                    # 忽略纯文本片段
+                    pass
+                else:
+                    parent.insert(idx + 1 + i, frag)
+            # 处理剩余部分
+            if after:
+                if card_fragments:
+                    last = card_fragments[-1]
+                    if isinstance(last, str):
+                        pass
+                    else:
+                        if last.tail:
+                            last.tail = after + last.tail
+                        else:
+                            last.tail = after
+                else:
+                    # 如果没有卡片，将after设为某个元素的tail或父元素的text
+                    # 简单处理：创建一个注释节点？
+                    pass
+            placeholder_found = True
+            logging.debug("Replaced placeholder %%card%% in tail.")
+            break
+
+    if not placeholder_found:
+        logging.error('Placeholder "%%card%%" not found in the article list file.')
+        return 1
+
+    # 将修改后的树写回文件（使用pretty_print_html格式化）
+    try:
+        updated_html = etree.tostring(tree, encoding="unicode", method="html")
+        # 使用pretty_print_html进行最终格式化（确保缩进统一）
+        final_html = pretty_print_html(updated_html)
+        with open(article_list_path, "w", encoding="utf-8") as f:
+            f.write(final_html)
+        success_count = len(articles)
+        logging.info(f"Successfully updated {success_count} cards.")
+    except Exception as e:
+        logging.error(f"Failed to write updated article list: {e}")
+        return 1
+
     logging.info(
         f"Finished update process. Success: {success_count}, Failed: {fail_count}"
     )

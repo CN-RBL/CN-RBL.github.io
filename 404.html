@@ -1,17 +1,25 @@
 <!-- -*- conding: utf-8 -*- -->
-<!-- 2025.8.8 -->
+<!-- 2026.2.12 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="renderer" content="webkit">
     <meta name="force-rendering" content="webkit">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="红蓝灯">
+    <meta name="keywords" content="红蓝灯, RBL">
     <meta http-equiv="Content-Language" content="zh-CN">
-    <meta name="robots" content="noindex, nofollow">
-    <title>404 - 红蓝灯的个人网站</title>
+    <meta name="robots" content="all">
+    <meta name="description" content="404 找不到页面">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="date=no">
+    <meta name="format-detection" content="address=no">
+    <title>404 - 红蓝灯的秘密基地</title>
+    <script src="../include/script.js"></script>
+    <link href="../include/style.css" rel="stylesheet">
+    <link href="../include/logo.ico" rel="icon">
     <script>
         function random_err() {
             let cn_errs = ["找不到页面", "你的页面去玩蛋仔派对了，我找不到他", "你的页面去玩MC了，我找不到他", "你的页面飞走了，我找不到他"];
@@ -22,17 +30,28 @@
         }
         window.onload = random_err;
     </script>
-    <link href="include/style.css" rel="stylesheet">
 </head>
-<body>
+<body class="line-numbers">
+    <nav id="topnav">
+        <div class="nav-inner">
+            <a href="index.html">首页</a>
+            <a href="download.html">下载</a>
+            <a href="articles.html">文章</a>
+            <a href="about.html">关于</a>
+            <a href="https://github.com/CN-RBL" target="_blank">我的GitHub</a>
+            <a href="https://space.bilibili.com/3546389388724715" target="_blank">我的B站</a>
+        </div>
+    </nav>
+    <div id="nav-spacer" aria-hidden="true"></div>
     <div id="main">
-        <h1 class="english" style="text-align: center;">4 0 4</h1>
-        <p class="chinese" id="cn_err">404 找不到页面</p>
-        <p class="english" id="en_err">404 No Page Found</p>
+        <h1 class="english">404</h1>
+        <p id="cn_err" class="chinese"></p>
+        <p id="en_err" class="english"></p>
     </div>
     <div id="copyright">
-        <p class="chinese" style="text-align: center;">© 2026 红蓝灯 保留所有权利才怪</p>
-        <p class="english" style="text-align: center;">© 2026 RBL All rights reserved? Hardly.</p>
+        <p class="chinese">© 2026 红蓝灯 保留所有权利才怪</p>
+        <p class="english">© 2026 RBL All rights reserved? Hardly.</p>
+        <p class="english" style="text-align: center;">Best view at 1528x740</p>
     </div>
 </body>
 </html>
