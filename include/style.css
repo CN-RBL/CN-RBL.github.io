@@ -10,6 +10,7 @@
     /* 间距 */
     --gap-between: 5px; /* main 与 copyright 的间距 */
     --copyright-min: 5vh; /* 版权区最小高度（用于计算） */
+    --copyright-max: 15vh; /* 版权区最大高度（用于计算） */
 
     /* 视觉 */
     --card-bg: rgba(0,0,0,0.5);
@@ -51,7 +52,7 @@ body {
 body.line-numbers { min-height: 100vh; }
 
 /* 公共卡片外观（毛玻璃） */
-#main, #copyright, #notice {
+#main, #copyright, #notice, .card {
     display: block;
     background: var(--card-bg);
     backdrop-filter: var(--backdrop);
@@ -106,7 +107,7 @@ body.line-numbers { min-height: 100vh; }
     scrollbar-gutter: stable both-edges;
     padding-bottom: var(--gap-between);
     /* 可用高度 = 视口 - 导航高度 - 版权最小高度 - 间隙 */
-    max-height: calc(100vh - var(--nav-height) - var(--copyright-min) - var(--gap-between));
+    max-height: calc(100vh - var(--nav-height) - var(--copyright-max) - var(--gap-between));
     z-index: 10;
 }
 
@@ -123,20 +124,27 @@ body.line-numbers { min-height: 100vh; }
     right: var(--page-margin);
     bottom: 0;
     min-height: var(--copyright-min);
+    max-height: var(--copyright-max);
     padding: 1% 2% var(--card-padding-bottom);
     z-index: 30;
 }
 
 #copyright p { text-align:center; margin:0; }
+h1 { text-align: center; margin: 0; }
+p,h2,h3,h4,h5,h6 { text-align: left;  }
 
 /* 字体 & 文本 */
 @font-face{ font-family: "JetBrains Mono"; src: url("JetBrainsMono.ttf") format("truetype"); }
 .chinese{ font-family: var(--tahoma-font); color: var(--muted); }
 .english{ font-family: var(--mono-font), system-ui; color: var(--muted); }
+.fl { text-align: left; }
+.fc { text-align: center; }
+.fr { text-align: right; }
+a { color: var(--muted); }
 .funny:active { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.85), 0 0 16px rgba(255,255,255,0.5); }
 code, pre{ font-family: var(--mono-font), system-ui; }
 
 /* 使带 class="chinese" 的有序/无序列表整体居中，且点/序号与文本一起居中显示 */
-ul { margin: 0 auto;width: fit-content; }
+ul { margin: 0 auto;width: fit-content;color: var(--muted); }
 
 .no_print { display: none; }

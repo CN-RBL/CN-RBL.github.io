@@ -240,8 +240,8 @@ div.code-toolbar > .toolbar > .toolbar-item > button:hover,
 div.code-toolbar > .toolbar > .toolbar-item > button:focus,
 div.code-toolbar > .toolbar > .toolbar-item > span:hover,
 div.code-toolbar > .toolbar > .toolbar-item > span:focus {
-	color: #999999;
 	text-decoration: none;
+	color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.85), 0 0 16px rgba(255,255,255,0.5);
 }
 
 span.inline-color-wrapper {
