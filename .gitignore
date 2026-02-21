@@ -4,6 +4,7 @@
 # Dir
 .idea/
 .vscode/
+test/
 .venv/
 .history/
 
