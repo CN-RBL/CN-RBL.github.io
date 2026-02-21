@@ -379,14 +379,8 @@ def main() -> int:
                 # 如果after非空，作为tail添加到最后一个卡片元素，或创建新文本节点
                 if card_fragments:
                     last = card_fragments[-1]
-                    if isinstance(last, str):
-                        # 理论上不会出现
-                        pass
-                    else:
-                        if last.tail:
-                            last.tail = after + last.tail
-                        else:
-                            last.tail = after
+                    if not isinstance(last, str):
+                        last.tail = after + last.tail if last.tail else after
                 else:
                     # 如果没有卡片，直接设置element的tail
                     element.tail = after
@@ -405,23 +399,14 @@ def main() -> int:
             # 插入到element之后
             idx = list(parent).index(element)
             for i, frag in enumerate(card_fragments):
-                if isinstance(frag, str):
-                    # 文本节点作为新的元素插入？实际上fragments_fromstring返回的字符串通常是空白
-                    # 忽略纯文本片段
-                    pass
-                else:
+                if not isinstance(frag, str):
                     parent.insert(idx + 1 + i, frag)
             # 处理剩余部分
             if after:
                 if card_fragments:
                     last = card_fragments[-1]
-                    if isinstance(last, str):
-                        pass
-                    else:
-                        if last.tail:
-                            last.tail = after + last.tail
-                        else:
-                            last.tail = after
+                    if not isinstance(last, str):
+                        last.tail = after + last.tail if last.tail else after
                 else:
                     # 如果没有卡片，将after设为某个元素的tail或父元素的text
                     # 简单处理：创建一个注释节点？
