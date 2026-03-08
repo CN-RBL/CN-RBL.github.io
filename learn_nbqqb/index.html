@@ -1,0 +1,87 @@
+<!-- -*- conding: utf-8 -*- -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="红蓝灯">
+    <meta name="keywords" content="红蓝灯, RBL, NBQQB, NeoBasicQQBot, NBQQB教程, NeoBasicQQBot教程, nbqqb, neobasicqqbot, 教程">
+    <meta http-equiv="Content-Language" content="zh-CN">
+    <meta name="robots" content="all">
+    <meta name="description" content="这是一个NeoBasicQQBot教程，欢迎你的到来！">
+    <meta name="generator" content="PTools">
+    <meta property="og:title" content="教你NeoBasicQQBot - 红蓝灯的秘密基地">
+    <meta property="og:description" content="这是一个NeoBasicQQBot教程，欢迎你的到来！">
+    <title>教你NeoBasicQQBot - 红蓝灯的秘密基地</title>
+    <script src="../include/script.js"></script>
+    <link href="../include/style.css" rel="stylesheet">
+    <link href="../include/logo.ico" rel="icon">
+</head>
+<body class="line-numbers">
+    <nav id="topnav">
+        <div class="nav-inner">
+            <a href="../index.html">首页</a>
+            <a href="../download.html">下载</a>
+            <a href="../project.html">项目</a>
+            <a href="../column.html">专栏</a>
+            <a href="../articles.html">文章</a>
+            <a href="../about.html">关于</a>
+            <a href="https://github.com/CN-RBL" target="_blank">我的GitHub</a>
+            <a href="https://space.bilibili.com/3546389388724715" target="_blank">我的B站</a>
+        </div>
+    </nav>
+    <div id="nav-spacer" aria-hidden="true"></div>
+    <div id="main">
+        <h1 class="chinese">教你NeoBasicQQBot</h1>
+        <hr>
+        <br/>
+        <h2 class="chinese">提示</h2>
+        <p class="chinese">下文中的NBQQB代指NeoBasicQQBot</p>
+        <h2 class="chinese">要求</h2>
+        <p class="chinese">你必须拥有Python 3.11或更高版本才能使用NBQQB</p>
+        <h2 class="chinese">安装</h2>
+        <p class="chinese">安装NBQQB非常简单，你只需要在命令行输入以下命令：</p>
+        <pre><code class="language-bash">pip install nbqqb</code></pre>
+        <h2 class="chinese">使用</h2>
+        <p class="chinese">使用NBQQB非常简单，你只需要在Python文件中输入这些代码并修改：</p>
+        <pre><code class="language-python">from nbqqb import NBQQBot
+
+def main() -> int:
+    keyword: str = "改为你聊天窗口标题包含的关键词"
+    bot: NBQQBot = NBQQBot(keyword)
+
+    if not bot.find_window():
+        print("啊哦，没有找到窗口！")
+        return 1
+
+    # 发送一条消息
+    bot.send_message("嘻嘻")
+
+    # 可选：如果保持窗口不切换，可以继续用 quick_send 快速发送多条
+    # bot.quick_send("这是第二条消息")
+    return 0
+
+
+if __name__ == "__main__":
+    main()
+
+</code></pre>
+        <p class="chinese">尝试运行你的Python文件，看看是否能成功发送消息！</p>
+        <div class="notice">
+            <h3 class="chinese">注意</h3>
+            <hr>
+            <p class="chinese">NBQQB是一个<strong>低级</strong>QQ机器人，实现方法是模拟人类操作QQ，性能较差，功能较少，但风控风险低</p>
+        </div>
+        <h2 class="chinese">文档</h2>
+        <p class="chinese">NBQQB的文档还在编写中，敬请期待！</p>
+    </div>
+    <div id="copyright">
+        <p class="chinese">© 2026 红蓝灯 保留所有权利才怪</p>
+        <p class="english">© 2026 RBL All rights reserved? Hardly.</p>
+        <p class="english">Best view at 1528x740</p>
+    </div>
+</body>
+</html>

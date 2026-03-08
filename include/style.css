@@ -332,7 +332,7 @@ body {
 body.line-numbers { min-height: 100vh; }
 
 /* 公共卡片外观（毛玻璃） */
-#main, #copyright, #notice, .card {
+#main, #copyright, .notice, .card {
     display: block;
     background: var(--card-bg);
     backdrop-filter: var(--backdrop);
@@ -429,3 +429,4 @@ hr { border: 1px solid var(--muted); }
 ul { margin: 0 auto;width: fit-content;color: var(--muted); }
 
 .no_print { display: none; }
+
