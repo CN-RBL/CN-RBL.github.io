@@ -1,0 +1,88 @@
+version: 6.1.5
+variant: default
+logo: /img/logo.svg
+head:
+  favicon: /img/favicon.svg
+  open_graph:
+    image: /img/avatar.png
+  meta:
+    - ''
+  rss:
+navbar:
+  menu:
+    首页: /
+    文章: /archives
+    专栏: /categories
+    标签: /tags
+    关于: /about
+  links:
+    我的GitHub:
+      icon: fab fa-github
+      url: 'https://github.com/CN-RBL'
+    我的B站:
+      icon: fab fa-bilibili
+      url: 'https://space.bilibili.com/3546389388724715'
+footer:
+  links:
+    红蓝灯:
+      icon: fas fa-crown
+      url: 'https://cn-rbl.github.io/'
+article:
+  highlight:
+    theme: atom-one-dark
+    clipboard: true
+    fold: unfolded
+  readtime: true
+search:
+  type: insight
+sidebar:
+  left:
+    sticky: true
+widgets:
+  -
+    position: left
+    type: profile
+    author: 红蓝灯
+    author_title: Ciallo～(∠・ω< )⌒☆
+    location: 中国
+    avatar: /img/avatar.png
+    avatar_rounded: true
+    follow_link: 'https://github.com/CN-RBL'
+    social_links:
+      GitHub:
+        icon: fab fa-github
+        url: 'https://github.com/CN-RBL'
+      B站:
+        icon: fab fa-bilibili
+        url: 'https://space.bilibili.com/3546389388724715'
+      Email:
+        icon: fa fa-envelope
+        url: 'mailto:red.blue.light@qq.com'
+    has_hitokoto: true
+  -
+    position: left
+    type: categories
+  -
+    position: left
+    type: tags
+  -
+    position: left
+    type: recent_posts
+  -
+    position: left
+    type: archives
+plugins:
+  animejs: false
+  back_to_top: true
+  gallery: false
+  busuanzi: false
+  progressbar: false
+use_pjax: false
+has_live_2D_switch: false
+
+# CDN
+providers:
+  cdn: loli
+  fontcdn: loli
+  iconcdn: loli
+  my_cdn_pre:
