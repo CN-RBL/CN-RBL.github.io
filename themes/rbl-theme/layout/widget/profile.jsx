@@ -84,6 +84,22 @@ class Profile extends Component {
                             </a>
                         </div>
                     </div>
+                    <div class="level-item has-text-centered is-marginless">
+                        <div>
+                            <p class="heading">访客</p>
+                            <a href="/">
+                                <p class="title"><span id="busuanzi_value_site_uv">0</span></p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="level-item has-text-centered is-marginless">
+                        <div>
+                            <p class="heading">浏览</p>
+                            <a href="/">
+                                <p class="title"><span id="busuanzi_value_site_pv">0</span></p>
+                            </a>
+                        </div>
+                    </div>
                 </nav>
                 {followLink ? <div class="level">
                     <a class="level-item button is-primary is-rounded" href={followLink} target="_blank" rel="noopener">{followTitle}</a>

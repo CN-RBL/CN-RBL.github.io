@@ -1,8 +1,8 @@
 version: 6.1.5
 variant: default
-logo: /img/logo.svg
+logo:
 head:
-  favicon: /img/favicon.svg
+  favicon: /img/avatar.png
   open_graph:
     image: /img/avatar.png
   meta:
@@ -43,8 +43,8 @@ widgets:
     position: left
     type: profile
     author: 红蓝灯
-    author_title: Ciallo～(∠・ω< )⌒☆
-    location: 中国
+    author_title: Ciallo~(∠・ω< )⌒☆
+    location: 中国·广东·汕尾
     avatar: /img/avatar.png
     avatar_rounded: true
     follow_link: 'https://github.com/CN-RBL'
@@ -71,14 +71,15 @@ widgets:
   -
     position: left
     type: archives
+busuanzi_only_count: true
+
 plugins:
   animejs: false
   back_to_top: true
   gallery: false
-  busuanzi: false
+  busuanzi: true
   progressbar: false
 use_pjax: false
-has_live_2D_switch: false
 
 # CDN
 providers:

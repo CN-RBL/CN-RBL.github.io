@@ -39,9 +39,9 @@ module.exports = class extends Component {
             highlight,
             variant = 'default',
             adsense_client_id,
-            has_live_2D_switch,
-            global_gray,
-            comment
+                global_gray,
+            comment,
+            plugins
         } = config;
         const {
             meta = [],
@@ -108,7 +108,6 @@ module.exports = class extends Component {
             structuredImages = page.photos;
         }
 
-        var hasLive2D = has_live_2D_switch == undefined || has_live_2D_switch;
         var globalGray = global_gray != undefined && global_gray;
         const isValineComment = comment != undefined && comment.type != undefined && comment.type == 'valine';
 
@@ -178,11 +177,10 @@ module.exports = class extends Component {
             <script src={cdn('jquery', '3.3.1', 'dist/jquery.min.js')}></script>
             <script src={my_cdn(url_for('/js/globalUtils.js'))}></script>
             <Plugins site={site} config={config} helper={helper} page={page} head={true} />
+            {plugins && plugins.busuanzi === true ? <script defer src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> : null}
 
             {adsenseClientId ? <script data-ad-client={adsenseClientId}
                 src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" async></script> : null}
-            {hasLive2D ? <link rel="stylesheet" href={my_cdn(url_for('/live2d/waifu.css'))} /> : null}
-            {hasLive2D ? <script type="text/javascript" async={true} src={my_cdn(url_for('/live2d/autoload.js'))}></script> : null}
             {isValineComment ? <script async="" referrerpolicy="no-referrer" src="//cdn.jsdelivr.net/npm/leancloud-storage@3/dist/av-min.js"></script> : null}
             {isValineComment ? <script src="//unpkg.com/valine/dist/Valine.min.js"></script> : null}
             {isValineComment ? <script src={my_cdn(url_for('/js/md5.min.js'))}></script> : null}

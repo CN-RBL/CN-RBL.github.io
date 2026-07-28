@@ -1,12 +1,6 @@
 const moment = require('moment');
 const { Component, Fragment } = require('inferno');
 const { toMomentLocale } = require('hexo/dist/plugins/helper/date');
-const Share = require('./share');
-const Donates = require('./donates');
-const Comment = require('./comment');
-const ArticleLicensing = require('../misc/article_licensing');
-const RecommendPosts = require('../widget/recommend_post');
-const AdsenseX = require('../widget/ads_x');
 /**
  * Get the word count of text.
  */
@@ -22,7 +16,7 @@ function getWordCount(content) {
 module.exports = class extends Component {
     render() {
         const { config, helper, page, index, mysite, indexAt } = this.props;
-        const { article, plugins, index_show_tags_categories,comment,comment_head_has_ad,article_head_has_ad,index_zero_position_ad,index_ad_positions } = config;
+        const { article, plugins, index_show_tags_categories } = config;
         const { url_for, date, date_xml, __, _p, _get_md5, _get_path_end_str } = helper;
 
         const language = toMomentLocale(page.lang || page.language || config.language || 'en');
@@ -38,18 +32,16 @@ module.exports = class extends Component {
 
         const isPost = page.layout == 'post';
 
-        const isGitalk = comment !== undefined && comment.type !== undefined && comment.type == 'gitalk';
-        const showComment = true;//comment !== undefined && comment.type !== undefined && (comment.type == 'gitalk' || comment.type == 'valine');
+        var isGitalk = false;
         var id = _get_md5(_get_path_end_str(page.path, page.uniqueId, page.title));
         var md5Id = id;
-        if (!isGitalk) {
+        if (true) {
             id = "/" + page.path;
             md5Id = _get_md5(id);
         }
 
         return <Fragment>
-            {(indexAt != undefined & indexAt == 0) ? <AdsenseX config={config} display={index_zero_position_ad}/> : null}
-            {!index ? <AdsenseX config={config} display={article_head_has_ad}/> : null}
+
             {/* Main content */}
             <div class="card">
                 {/* Thumbnail */}
@@ -89,9 +81,7 @@ module.exports = class extends Component {
                                     {/*return categories;*/}
                                 {/*})()}*/}
                             {/*</span> : null}*/}
-                            {showComment ?
-                                <a class="commentCountImg" href={`${url_for(page.link || page.path)}#comment-container`}><span class="display-none-class">{id}</span><i class="far fa-comment-dots" />&nbsp;<span class="commentCount" id={md5Id}>99+</span>&nbsp;&nbsp;</a> : null}
-                            {/* Read time */}
+                                {/* Read time */}
                             {/*{article && article.readtime && article.readtime === true ? <span class="level-item">*/}
                                 {/*{(() => {*/}
                                     {/*const words = getWordCount(page._content);*/}
@@ -104,7 +94,7 @@ module.exports = class extends Component {
                                 </span> : null}
                             {/* Visitor counter */}
                             {!index && plugins && plugins.busuanzi === true ? <span class="level-item" id="busuanzi_container_page_pv" dangerouslySetInnerHTML={{
-                                __html: _p('plugin.visit_count', '<span id="busuanzi_value_page_pv">0</span>')
+                                __html: _p('plugin.visit_count', '<i class="far fa-eye">&nbsp;</i><span id="busuanzi_value_page_pv">0</span>')
                             }}></span> : null}
                         </div>
                         {/*top icon*/}
@@ -180,15 +170,8 @@ module.exports = class extends Component {
                             </div> : null
                         }
                     </div> : null}
-                    {/*Recommend & Relation post*/}
-                    {!index && page.layout == 'post' && mysite !==undefined ? <RecommendPosts.Cacheable config={config} curPost={page} helper={helper} mysite={mysite} /> : null}
-                    {/* Share button */}
-                    {!index ? <Share config={config} page={page} helper={helper} /> : null}
                 </article>
             </div>
-            {index && index_ad_positions && (index_ad_positions.indexOf(indexAt) > -1) ? <AdsenseX config={config} display={index_ad_positions != undefined}/> : null}
-            {/* Donate button */}
-            {!index ? <Donates config={config} helper={helper} /> : null}
             {/* Post navigation */}
             {!index && (page.prev || page.next) ? <nav class="post-navigation mt-4 level is-mobile">
                 {page.prev ? <div class="level-start">
@@ -204,9 +187,6 @@ module.exports = class extends Component {
                     </a>
                 </div> : null}
             </nav> : null}
-            {!index ? <AdsenseX config={config} display={comment_head_has_ad}/> : null}
-            {/* Comment */}
-            {!index ? <Comment config={config} page={page} helper={helper} /> : null}
         </Fragment>;
     }
 };
