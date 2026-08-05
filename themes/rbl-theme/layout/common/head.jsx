@@ -38,9 +38,6 @@ module.exports = class extends Component {
             article,
             highlight,
             variant = 'default',
-            adsense_client_id,
-                global_gray,
-            comment,
             plugins
         } = config;
         const {
@@ -87,10 +84,6 @@ module.exports = class extends Component {
             images = [url_for('/img/og_image.png')];
         }
 
-        let adsenseClientId = null;
-        if (adsense_client_id) {
-            adsenseClientId = adsense_client_id;
-        }
 
         let openGraphImages = images;
         if ((typeof open_graph === 'object' && open_graph !== null)
@@ -108,16 +101,7 @@ module.exports = class extends Component {
             structuredImages = page.photos;
         }
 
-        var globalGray = global_gray != undefined && global_gray;
-        const isValineComment = comment != undefined && comment.type != undefined && comment.type == 'valine';
 
-        let followItVerificationCode = null;
-        if (Array.isArray(config.widgets)) {
-            const widget = config.widgets.find(widget => widget.type === 'followit');
-            if (widget) {
-                followItVerificationCode = widget.verification_code;
-            }
-        }
 
         return <head>
             <meta charset="utf-8" />
@@ -171,21 +155,12 @@ module.exports = class extends Component {
             <link rel="stylesheet" href={fontCssUrl[variant]} />
             <link rel="stylesheet" href={my_cdn(url_for('/css/' + variant + '.css'))} />
             {/*icon*/}
-            <link rel="stylesheet" href="https://cdnjs.loli.net/ajax/libs/font-awesome/5.12.0/css/all.min.css"/>
-            <link rel="stylesheet" href={fontcdn('Ubuntu:400,600|Source+Code+Pro|Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Microsoft YaHei:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&amp;subset=latin,latin-ext|Inconsolata|Itim|Lobster.css')} />
-            {globalGray ? <link rel="stylesheet" href={my_cdn(url_for('/css/global_gray.css'))} /> : null}
             <script src={cdn('jquery', '3.3.1', 'dist/jquery.min.js')}></script>
             <script src={my_cdn(url_for('/js/globalUtils.js'))}></script>
             <Plugins site={site} config={config} helper={helper} page={page} head={true} />
             {plugins && plugins.busuanzi === true ? <script defer src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> : null}
 
-            {adsenseClientId ? <script data-ad-client={adsenseClientId}
-                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" async></script> : null}
-            {isValineComment ? <script async="" referrerpolicy="no-referrer" src="//cdn.jsdelivr.net/npm/leancloud-storage@3/dist/av-min.js"></script> : null}
-            {isValineComment ? <script src="//unpkg.com/valine/dist/Valine.min.js"></script> : null}
-            {isValineComment ? <script src={my_cdn(url_for('/js/md5.min.js'))}></script> : null}
 
-            {followItVerificationCode ? <meta name="follow.it-verification-code" content={followItVerificationCode} /> : null}
         </head>;
     }
 };

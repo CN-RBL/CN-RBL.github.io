@@ -68,9 +68,6 @@ class Navbar extends Component {
                         {showSearch ? <a class="navbar-item search" title={searchTitle} href="javascript:;">
                             <i class="fas fa-search"></i>
                         </a> : null}
-                        <a class="navbar-item" id="night-nav" title="Night Mode" href="javascript:;">
-                            <i class="fas fa-moon" id="night-icon"></i>
-                        </a>
                     </div>
                 </div>
             </div>

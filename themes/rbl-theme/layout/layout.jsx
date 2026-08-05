@@ -33,10 +33,10 @@ module.exports = class extends Component {
         });
         document.addEventListener('pjax:complete', function () {
             $(".section").css({opacity:1});
-            loadMainJs(jQuery, window.moment, window.ClipboardJS, window.RBLThemeSettings);
-            loadBackTop();
-            loadBusuanzi();
-            if(typeof loadBanner == 'function'){ loadBanner(); }
+            if (typeof loadMainJs === 'function') loadMainJs(jQuery, window.moment, window.ClipboardJS, window.RBLThemeSettings);
+            if (typeof loadBackTop === 'function') loadBackTop();
+            if (typeof loadBusuanzi === 'function') loadBusuanzi();
+            if (typeof loadBanner === 'function') loadBanner();
         });`;
 
         let isPageOrPost = page.layout == 'page' || page.layout == 'post';

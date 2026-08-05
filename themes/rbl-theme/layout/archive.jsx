@@ -75,13 +75,13 @@ module.exports = class extends Component {
                 text: '${titleText}',
                 left: '42%',
                 textStyle: {
-                    color: '#3C4858'
+                    color: '#cccccc'
                 }
             },
             tooltip: {
                 padding: 10,
-                backgroundColor: '#555',
-                borderColor: '#777',
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                borderColor: 'rgba(255,255,255,0.1)',
                 borderWidth: 1,
                 formatter: function (obj) {
                     var value = obj.value;
@@ -95,7 +95,7 @@ module.exports = class extends Component {
                 calculable: true,
                 inRange: {
                     symbol: 'rect',
-                    color: ['#ebedf0', '#c6e48b', '#7bc96f', '#239a3b', '#196127']
+                    color: ['rgba(255,255,255,0.04)', 'rgba(100,200,255,0.25)', 'rgba(100,200,255,0.45)', 'rgba(100,200,255,0.65)', 'rgba(100,200,255,0.85)']
                 },
                 itemWidth: 12,
                 itemHeight: 12,
@@ -111,8 +111,8 @@ module.exports = class extends Component {
                     show: false
                 },
                 itemStyle: {
-                    color: '#196127',
-                    borderColor: '#fff',
+                    color: 'rgba(100,200,255,0.85)',
+                    borderColor: 'rgba(255,255,255,0.3)',
                     borderWidth: 2
                 },
                 yearLabel: {
