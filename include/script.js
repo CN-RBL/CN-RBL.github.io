@@ -22567,14 +22567,648 @@ Prism.languages.yang = {
 }());
 /* #endregion */
 
-date = new Date();
-year = date.getFullYear();
-month = date.getMonth() + 1;
-day = date.getDate();
-if (year === 2026 && month === 2 && (day === 16 || day === 17)) {
-    window.alert("新年快乐！")
-    console.info("新年快乐！")
-}
+/* #region */
+/**
+ * 许可协议弹窗 - 单 JS 文件（风格适配原站）
+ * 强制用户滚动至底部并停留 6.5 秒后方可同意
+ * 状态保存在 localStorage 中，同意后不再显示
+ */
+(function() {
+    'use strict';
+
+    // ========== 配置项 ==========
+    const CONFIG = {
+        storageKey: 'licenseAgreed',          // localStorage 键名
+        minReadTime: 6500,                    // 最短阅读时间（毫秒）
+        licenseTitle: '用户许可协议',
+        licenseSub: '请仔细阅读，阅读完全文后方可同意',
+        // 协议内容（支持 HTML）
+        licenseHTML: `
+            <h1>MIT 协议（The MIT License）</h1>
+			<h2>中文</h2>
+			<p>
+版权所有 © 2026 RBL<br/><br/>
+特此免费授予任何获得本软件及相关文档文件（“软件”）副本的人使用该软件的权利，包括不限于使用、复制、修改、合并、发布、分发、再许可和/或销售该软件的副本，并允许向其提供软件的人在遵守以下条件的前提下如此行事：<br/><br/>
+上述版权声明和本许可声明应包含在软件的所有副本或主要部分中。<br/><br/>
+该软件按“原样”提供，不附带任何形式的明示或暗示的保证，包括但不限于对适销性、特定用途适用性及非侵权性的保证。在任何情况下，作者或版权持有人均不对因使用该软件或与该软件的其他交易而引起的任何索赔、损害或其他责任承担责任，无论是在合同、侵权行为或其他方面。</p>
+			<h2>English</h2>
+			<p>
+Copyright © 2026 RBL</br></br>
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:<br/><br/>
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.<br/><br/>
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+        `
+    };
+
+    // ========== 状态变量 ==========
+    let isScrolledToBottom = false;
+    let isTimeElapsed = false;
+    let overlay, rejectOverlay, btnAgree, btnReject, btnReconsider;
+    let licenseText, progressBar, readProgress;
+
+    // ========== 工具函数 ==========
+    function hasAgreed() {
+        try {
+            return localStorage.getItem(CONFIG.storageKey) === 'true';
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function saveAgreed() {
+        try {
+            localStorage.setItem(CONFIG.storageKey, 'true');
+        } catch (error) {
+            // 浏览器隐私模式下忽略，避免异常中断页面交互
+        }
+    }
+
+    // ========== 动态注入样式（统一使用站点主题变量） ==========
+    function injectStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            /* ===== 遮罩层（全屏暗色毛玻璃） ===== */
+            .license-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: var(--license-overlay-bg, rgba(0, 0, 0, 0.12));
+                backdrop-filter: blur(3px);
+                -webkit-backdrop-filter: blur(3px);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 99999;
+                padding: 20px;
+            }
+            .license-overlay.active {
+                display: flex;
+            }
+
+            /* ===== 弹窗卡片 ===== */
+            .license-modal {
+                background: var(--license-card-bg, rgba(12, 16, 20, 0.42));
+                backdrop-filter: blur(14px);
+                -webkit-backdrop-filter: blur(14px);
+                border-radius: 28px;
+                max-width: 560px;
+                width: 100%;
+                padding: 32px 28px 28px;
+                box-shadow: 0 40px 80px var(--panel-shadow, rgba(0, 0, 0, 0.45));
+                animation: licenseFadeIn 0.35s ease-out;
+                max-height: 90vh;
+                display: flex;
+                flex-direction: column;
+                box-sizing: border-box;
+                border: 1px solid var(--license-border, rgba(255, 255, 255, 0.1));
+            }
+            @keyframes licenseFadeIn {
+                from { opacity: 0; transform: scale(0.94) translateY(20px); }
+                to   { opacity: 1; transform: scale(1) translateY(0); }
+            }
+
+            /* ===== 头部 ===== */
+            .license-modal-header {
+                text-align: center;
+                margin-bottom: 12px;
+            }
+            .license-modal-header .icon {
+                font-size: 40px;
+                display: block;
+                margin-bottom: 4px;
+            }
+            .license-modal-header h2 {
+                font-size: 24px;
+                font-weight: 700;
+                color: var(--panel-text, #e0e0e0);
+                margin: 0;
+                font-family: "JetBrains Mono", system-ui, sans-serif;
+            }
+            .license-modal-header .sub {
+                font-size: 14px;
+                color: var(--license-muted, #999999);
+                margin-top: 2px;
+                font-family: Tahoma, system-ui, sans-serif;
+            }
+
+            /* ===== 进度条 ===== */
+            .license-progress-area {
+                margin: 6px 0 12px;
+            }
+            .license-progress-label {
+                display: flex;
+                justify-content: space-between;
+                font-size: 13px;
+                color: var(--license-muted, #999999);
+                margin-bottom: 4px;
+                font-family: Tahoma, system-ui, sans-serif;
+            }
+            .license-progress-bar-bg {
+                height: 5px;
+                background: var(--license-progress-bg, rgba(255, 255, 255, 0.08));
+                border-radius: 6px;
+                overflow: hidden;
+            }
+            .license-progress-bar-fill {
+                width: 0%;
+                height: 100%;
+                background: var(--panel-accent, #2b6cb0);
+                border-radius: 6px;
+                transition: width 0.15s ease;
+            }
+
+            /* ===== 协议文本（滚动区） ===== */
+            .license-text {
+                background: var(--license-text-bg, rgba(0, 0, 0, 0.35));
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+                border-radius: 16px;
+                padding: 18px 20px;
+                max-height: 200px;
+                overflow-y: auto;
+                border: 1px solid var(--license-border, rgba(255, 255, 255, 0.08));
+                font-size: 14px;
+                line-height: 1.8;
+                color: var(--license-text, #cccccc);
+                text-align: left;
+                margin-bottom: 16px;
+                font-family: Tahoma, system-ui, sans-serif;
+            }
+            .license-text::-webkit-scrollbar {
+                width: 6px;
+            }
+            .license-text::-webkit-scrollbar-track {
+                background: rgba(255, 255, 255, 0.02);
+                border-radius: 10px;
+            }
+            .license-text::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 10px;
+            }
+            .license-text h1, .license-text h2, .license-text h3 {
+                color: var(--panel-text, #e0e0e0);
+                margin-top: 12px;
+                margin-bottom: 6px;
+                font-family: "JetBrains Mono", system-ui, sans-serif;
+            }
+            .license-text h1:first-child,
+            .license-text h2:first-child,
+            .license-text h3:first-child {
+                margin-top: 0;
+            }
+            .license-text p {
+                margin-bottom: 8px;
+            }
+            .license-text ul {
+                padding-left: 20px;
+                margin-bottom: 10px;
+            }
+            .license-text ul li {
+                margin-bottom: 4px;
+            }
+
+            /* ===== 按钮组 ===== */
+            .license-actions {
+                display: flex;
+                gap: 14px;
+                margin-top: 4px;
+            }
+            .license-actions button {
+                flex: 1;
+                padding: 14px 0;
+                border: none;
+                border-radius: 16px;
+                font-size: 17px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 6px;
+                font-family: "JetBrains Mono", system-ui, sans-serif;
+                background: rgba(255, 255, 255, 0.05);
+                color: var(--license-muted, #999999);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+                border: 1px solid var(--license-border, rgba(255, 255, 255, 0.08));
+            }
+            .license-actions button:focus-visible {
+                outline: 2px solid var(--panel-accent, #2b6cb0);
+                outline-offset: 2px;
+            }
+            .license-btn-agree {
+                background: rgba(43, 108, 176, 0.25);
+                color: var(--license-button-disabled, #666666);
+                opacity: 0.6;
+                cursor: not-allowed;
+                border-color: rgba(43, 108, 176, 0.15);
+            }
+            .license-btn-agree.enabled {
+                background: var(--panel-accent, #2b6cb0);
+                color: var(--license-button-text, #ffffff);
+                opacity: 1;
+                cursor: pointer;
+                border-color: var(--panel-accent, #2b6cb0);
+                box-shadow: 0 4px 14px rgba(43, 108, 176, 0.30);
+            }
+            .license-btn-agree.enabled:hover {
+                background: var(--panel-accent-strong, #1a4f8b);
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(43, 108, 176, 0.45);
+            }
+            .license-btn-agree.enabled:active {
+                transform: scale(0.97);
+            }
+
+            .license-btn-reject {
+                background: rgba(255, 255, 255, 0.04);
+                color: var(--license-muted, #999999);
+                border-color: var(--license-border, rgba(255, 255, 255, 0.08));
+            }
+            .license-btn-reject:hover {
+                background: rgba(255, 70, 70, 0.15);
+                color: var(--panel-danger, #ff6b6b);
+                border-color: rgba(255, 70, 70, 0.25);
+                transform: translateY(-2px);
+                text-shadow: 0 0 8px rgba(255, 70, 70, 0.3);
+            }
+            .license-btn-reject:active {
+                transform: scale(0.97);
+            }
+
+            /* ===== 拒绝覆盖层 ===== */
+            .license-reject-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.78);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 100000;
+                padding: 20px;
+            }
+            .license-reject-overlay.active {
+                display: flex;
+            }
+            .license-reject-card {
+                background: var(--license-card-bg, rgba(12, 16, 20, 0.78));
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border-radius: 28px;
+                max-width: 420px;
+                width: 100%;
+                padding: 40px 32px 32px;
+                text-align: center;
+                box-shadow: 0 40px 80px var(--panel-shadow, rgba(0, 0, 0, 0.45));
+                animation: licenseFadeIn 0.3s ease-out;
+                border: 1px solid var(--license-border, rgba(255, 255, 255, 0.08));
+            }
+            .license-reject-card .big-icon {
+                font-size: 56px;
+                display: block;
+                margin-bottom: 10px;
+            }
+            .license-reject-card h3 {
+                font-size: 24px;
+                font-weight: 700;
+                color: var(--panel-text, #e0e0e0);
+                margin-bottom: 8px;
+                font-family: "JetBrains Mono", system-ui, sans-serif;
+            }
+            .license-reject-card p {
+                font-size: 16px;
+                color: var(--license-muted, #999999);
+                line-height: 1.6;
+                margin-bottom: 24px;
+                font-family: Tahoma, system-ui, sans-serif;
+            }
+            .license-reject-card .btn-reconsider {
+                background: var(--panel-accent, #2b6cb0);
+                color: var(--license-button-text, #ffffff);
+                border: none;
+                padding: 14px 36px;
+                border-radius: 16px;
+                font-size: 17px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+                box-shadow: 0 4px 14px rgba(43, 108, 176, 0.25);
+                font-family: "JetBrains Mono", system-ui, sans-serif;
+            }
+            .license-reject-card .btn-reconsider:hover {
+                background: var(--panel-accent-strong, #1a4f8b);
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(43, 108, 176, 0.45);
+            }
+            .license-reject-card .btn-reconsider:active {
+                transform: scale(0.97);
+            }
+
+            @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+                .license-overlay,
+                .license-modal,
+                .license-text,
+                .license-reject-overlay,
+                .license-reject-card {
+                    background: rgba(10, 12, 16, 0.92);
+                    backdrop-filter: none;
+                    -webkit-backdrop-filter: none;
+                }
+            }
+
+            /* ===== 响应式 ===== */
+            @media (max-width: 640px) {
+                .license-modal {
+                    padding: 24px 16px 20px;
+                }
+                .license-modal-header h2 {
+                    font-size: 21px;
+                }
+                .license-text {
+                    max-height: 150px;
+                    font-size: 13px;
+                    padding: 14px 16px;
+                }
+                .license-actions {
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                .license-reject-card {
+                    padding: 32px 20px 28px;
+                }
+            }
+            @media (max-width: 400px) {
+                .license-modal {
+                    padding: 18px 12px 16px;
+                }
+                .license-text {
+                    max-height: 120px;
+                    font-size: 12px;
+                    padding: 12px 14px;
+                }
+                .license-actions button {
+                    font-size: 15px;
+                    padding: 12px 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // ========== 构建 DOM ==========
+    function buildModal() {
+        // ---- 遮罩（主弹窗） ----
+        overlay = document.createElement('div');
+        overlay.className = 'license-overlay';
+        overlay.id = 'licenseOverlay';
+
+        const modal = document.createElement('div');
+        modal.className = 'license-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+
+        // 头部
+        const header = document.createElement('div');
+        header.className = 'license-modal-header';
+        header.innerHTML = `
+            <span class="icon">📄</span>
+            <h2>${CONFIG.licenseTitle}</h2>
+            <div class="sub">${CONFIG.licenseSub}</div>
+        `;
+        modal.appendChild(header);
+
+        // 进度条区域
+        const progressArea = document.createElement('div');
+        progressArea.className = 'license-progress-area';
+        progressArea.innerHTML = `
+            <div class="license-progress-label">
+                <span>📖 阅读进度</span>
+                <span id="licenseReadProgress">0%</span>
+            </div>
+            <div class="license-progress-bar-bg">
+                <div class="license-progress-bar-fill" id="licenseProgressBar"></div>
+            </div>
+        `;
+        modal.appendChild(progressArea);
+
+        // 协议文本（可滚动）
+        const textDiv = document.createElement('div');
+        textDiv.className = 'license-text';
+        textDiv.id = 'licenseText';
+        textDiv.innerHTML = CONFIG.licenseHTML;
+        modal.appendChild(textDiv);
+
+        // 按钮组
+        const actions = document.createElement('div');
+        actions.className = 'license-actions';
+
+        const agreeBtn = document.createElement('button');
+        agreeBtn.className = 'license-btn-agree';
+        agreeBtn.id = 'licenseBtnAgree';
+        agreeBtn.disabled = true;
+        agreeBtn.textContent = '⏳ 请开始阅读协议';
+        actions.appendChild(agreeBtn);
+
+        const rejectBtn = document.createElement('button');
+        rejectBtn.className = 'license-btn-reject';
+        rejectBtn.id = 'licenseBtnReject';
+        rejectBtn.textContent = '✋ 但是我拒绝！';
+        actions.appendChild(rejectBtn);
+
+        modal.appendChild(actions);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        // ---- 拒绝覆盖层 ----
+        rejectOverlay = document.createElement('div');
+        rejectOverlay.className = 'license-reject-overlay';
+        rejectOverlay.id = 'licenseRejectOverlay';
+        rejectOverlay.innerHTML = `
+            <div class="license-reject-card">
+                <span class="big-icon">🚫</span>
+                <h3>您拒绝了许可协议</h3>
+                <p>您必须同意许可协议才能继续访问本网站。<br />如果您改变主意，可以点击下方按钮重新考虑。</p>
+                <button class="btn-reconsider" id="licenseBtnReconsider">🔄 重新考虑</button>
+            </div>
+        `;
+        document.body.appendChild(rejectOverlay);
+
+        // 缓存 DOM 引用
+        btnAgree = document.getElementById('licenseBtnAgree');
+        btnReject = document.getElementById('licenseBtnReject');
+        btnReconsider = document.getElementById('licenseBtnReconsider');
+        licenseText = document.getElementById('licenseText');
+        progressBar = document.getElementById('licenseProgressBar');
+        readProgress = document.getElementById('licenseReadProgress');
+    }
+
+    // ========== 核心逻辑 ==========
+    function updateAgreeButton() {
+        if (isScrolledToBottom && isTimeElapsed) {
+            btnAgree.disabled = false;
+            btnAgree.classList.add('enabled');
+            btnAgree.textContent = '✅ 可以！我同意！';
+        } else {
+            btnAgree.disabled = true;
+            btnAgree.classList.remove('enabled');
+            if (!isScrolledToBottom || !isTimeElapsed) {
+                btnAgree.textContent = '📖 请认真阅读协议！';
+            } else {
+                btnAgree.textContent = '⏳ 请开始阅读协议';
+            }
+        }
+    }
+
+    function handleScroll() {
+        const scrollTop = licenseText.scrollTop;
+        const scrollHeight = licenseText.scrollHeight - licenseText.clientHeight;
+        let percent = 0;
+        if (scrollHeight > 0) {
+            percent = Math.min(100, Math.round((scrollTop / scrollHeight) * 100));
+        }
+        readProgress.textContent = percent + '%';
+        progressBar.style.width = percent + '%';
+
+        if (percent >= 100) {
+            if (!isScrolledToBottom) {
+                isScrolledToBottom = true;
+                updateAgreeButton();
+            }
+        } else {
+            if (isScrolledToBottom) {
+                isScrolledToBottom = false;
+                updateAgreeButton();
+            }
+        }
+    }
+
+    function startTimer() {
+        setTimeout(function() {
+            isTimeElapsed = true;
+            updateAgreeButton();
+        }, CONFIG.minReadTime);
+    }
+
+    function handleAgree() {
+        if (btnAgree.disabled) return;
+        saveAgreed();
+        overlay.classList.remove('active');
+        rejectOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function tryCloseWindow() {
+        try {
+            window.close();
+            let checkCount = 0;
+            const maxChecks = 6;
+            const interval = setInterval(function() {
+                checkCount++;
+                if (window.closed) {
+                    clearInterval(interval);
+                    return;
+                }
+                if (checkCount >= maxChecks) {
+                    clearInterval(interval);
+                    setTimeout(function() {
+                        if (!window.closed) {
+                            rejectOverlay.classList.add('active');
+                            document.body.style.overflow = 'hidden';
+                        }
+                    }, 10);
+                }
+            }, 200);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function handleReject() {
+        overlay.classList.remove('active');
+        const closed = tryCloseWindow();
+        if (!closed) {
+            rejectOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function handleReconsider() {
+        rejectOverlay.classList.remove('active');
+        // 重置滚动和计时状态
+        isScrolledToBottom = false;
+        isTimeElapsed = false;
+        licenseText.scrollTop = 0;
+        readProgress.textContent = '0%';
+        progressBar.style.width = '0%';
+        updateAgreeButton();
+        startTimer();
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // ========== 初始化 ==========
+    function init() {
+        if (hasAgreed()) {
+            return; // 已同意，不弹窗
+        }
+
+        // 注入样式
+        injectStyles();
+        // 构建 DOM
+        buildModal();
+
+        // 绑定事件
+        licenseText.addEventListener('scroll', handleScroll);
+        btnAgree.addEventListener('click', handleAgree);
+        btnReject.addEventListener('click', handleReject);
+        btnReconsider.addEventListener('click', handleReconsider);
+
+        // 阻止 ESC 关闭
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (overlay.classList.contains('active') || rejectOverlay.classList.contains('active')) {
+                    e.preventDefault();
+                }
+            }
+        });
+        // 点击遮罩不可关闭（强制按钮操作）
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) { /* 无操作 */ }
+        });
+        rejectOverlay.addEventListener('click', function(e) {
+            if (e.target === rejectOverlay) { /* 无操作 */ }
+        });
+
+        // 显示弹窗
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // 启动计时器
+        startTimer();
+        // 初始按钮状态
+        updateAgreeButton();
+
+        console.log('许可协议弹窗已加载（风格已适配）');
+    }
+
+    // 页面加载完成后执行
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+})();
+/* #endregion */
 
 const pageWidth = document.documentElement.scrollWidth;
 const pageHeight = document.documentElement.scrollHeight;
