@@ -1,0 +1,431 @@
+/* -*- conding: utf-8 -*- */
+/*region*/
+/* https://prismjs.com/download#themes=prism-dark&languages=markup+css+clike+javascript+abap+abnf+actionscript+ada+agda+al+antlr4+apacheconf+apex+apl+applescript+aql+arduino+arff+armasm+arturo+asciidoc+aspnet+asm6502+asmatmel+autohotkey+autoit+avisynth+avro-idl+awk+bash+basic+batch+bbcode+bbj+bicep+birb+bison+bnf+bqn+brainfuck+brightscript+bro+bsl+c+csharp+cpp+cfscript+chaiscript+cil+cilkc+cilkcpp+clojure+cmake+cobol+coffeescript+concurnas+csp+cooklang+coq+crystal+css-extras+csv+cue+cypher+d+dart+dataweave+dax+dhall+diff+django+dns-zone-file+docker+dot+ebnf+editorconfig+eiffel+ejs+elixir+elm+etlua+erb+erlang+excel-formula+fsharp+factor+false+firestore-security-rules+flow+fortran+ftl+gml+gap+gcode+gdscript+gedcom+gettext+gherkin+git+glsl+gn+linker-script+go+go-module+gradle+graphql+groovy+haml+handlebars+haskell+haxe+hcl+hlsl+hoon+http+hpkp+hsts+ichigojam+icon+icu-message-format+idris+ignore+inform7+ini+io+j+java+javadoc+javadoclike+javastacktrace+jexl+jolie+jq+jsdoc+js-extras+json+json5+jsonp+jsstacktrace+js-templates+julia+keepalived+keyman+kotlin+kumir+kusto+latex+latte+less+lilypond+liquid+lisp+livescript+llvm+log+lolcode+lua+magma+makefile+markdown+markup-templating+mata+matlab+maxscript+mel+mermaid+metafont+mizar+mongodb+monkey+moonscript+n1ql+n4js+nand2tetris-hdl+naniscript+nasm+neon+nevod+nginx+nim+nix+nsis+objectivec+ocaml+odin+opencl+openqasm+oz+parigp+parser+pascal+pascaligo+psl+pcaxis+peoplecode+perl+php+phpdoc+php-extras+plant-uml+plsql+powerquery+powershell+processing+prolog+promql+properties+protobuf+pug+puppet+pure+purebasic+purescript+python+qsharp+q+qml+qore+r+racket+cshtml+jsx+tsx+reason+regex+rego+renpy+rescript+rest+rip+roboconf+robotframework+ruby+rust+sas+sass+scss+scala+scheme+shell-session+smali+smalltalk+smarty+sml+solidity+solution-file+soy+sparql+splunk-spl+sqf+sql+squirrel+stan+stata+iecst+stylus+supercollider+swift+systemd+t4-templating+t4-cs+t4-vb+tap+tcl+tt2+textile+toml+tremor+turtle+twig+typescript+typoscript+unrealscript+uorazor+uri+v+vala+vbnet+velocity+verilog+vhdl+vim+visual-basic+warpscript+wasm+web-idl+wgsl+wiki+wolfram+wren+xeora+xml-doc+xojo+xquery+yaml+yang+zig&plugins=line-numbers+show-language+inline-color+toolbar+copy-to-clipboard+download-button */
+/**
+ * prism.js Dark theme for JavaScript, CSS and HTML
+ * Based on the slides of the talk “/Reg(exp){2}lained/”
+ * @author Lea Verou
+ */
+
+@font-face {
+	font-family: "JetBrains Mono";
+	src: url("JetBrainsMono.ttf") format("truetype");
+}
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: white;
+	background: none;
+	text-shadow: 0 -.1em .2em black;
+	font-size: 1em;
+	text-align: left;
+	font-family: "JetBrains Mono",system-ui;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+@media print {
+	code[class*="language-"],
+	pre[class*="language-"] {
+		text-shadow: none;
+	}
+}
+
+pre[class*="language-"],
+:not(pre) > code[class*="language-"] {
+	background: rgba(0,0,0,50%);
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+	/* border: .3em solid hsl(30, 20%, 40%); */
+	border-radius: .5em;
+	/* box-shadow: 1px 1px .5em black inset; */
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .15em .2em .05em;
+	border-radius: .3em;
+	border: .13em solid hsl(30, 20%, 40%);
+	box-shadow: 1px 1px .3em -.1em black inset;
+	white-space: normal;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: hsl(30, 20%, 50%);
+}
+
+.token.punctuation {
+	opacity: .7;
+}
+
+.token.namespace {
+	opacity: .7;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol {
+	color: hsl(350, 40%, 70%);
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+	color: hsl(75, 70%, 60%);
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string,
+.token.variable {
+	color: hsl(40, 90%, 60%);
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+	color: hsl(350, 40%, 70%);
+}
+
+.token.regex,
+.token.important {
+	color: #e90;
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+
+.token.deleted {
+	color: red;
+}
+
+pre[class*="language-"].line-numbers {
+	position: relative;
+	padding-left: 3.8em;
+	counter-reset: linenumber;
+}
+
+pre[class*="language-"].line-numbers > code {
+	position: relative;
+	white-space: inherit;
+}
+
+.line-numbers .line-numbers-rows {
+	position: absolute;
+	pointer-events: none;
+	top: 0;
+	font-size: 100%;
+	left: -3.8em;
+	width: 3em; /* works for line-numbers below 1000 lines */
+	letter-spacing: -1px;
+	border-right: 1px solid #999;
+
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+
+}
+
+	.line-numbers-rows > span {
+		display: block;
+		counter-increment: linenumber;
+	}
+
+		.line-numbers-rows > span:before {
+			content: counter(linenumber);
+			color: #999;
+			display: block;
+			padding-right: 0.8em;
+			text-align: right;
+		}
+
+div.code-toolbar {
+	position: relative;
+}
+
+div.code-toolbar > .toolbar {
+	position: absolute;
+	z-index: 10;
+	top: .3em;
+	right: .2em;
+	transition: opacity 0.3s ease-in-out;
+	opacity: 0;
+}
+
+div.code-toolbar:hover > .toolbar {
+	opacity: 1;
+}
+
+/* Separate line b/c rules are thrown out if selector is invalid.
+   IE11 and old Edge versions don't support :focus-within. */
+div.code-toolbar:focus-within > .toolbar {
+	opacity: 1;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item {
+	display: inline-block;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a {
+	cursor: pointer;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > button {
+	background: none;
+	border: 0;
+	color: inherit;
+	font: inherit;
+	line-height: normal;
+	overflow: visible;
+	padding: 0;
+	-webkit-user-select: none; /* for button */
+	-moz-user-select: none;
+	-ms-user-select: none;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a,
+div.code-toolbar > .toolbar > .toolbar-item > button,
+div.code-toolbar > .toolbar > .toolbar-item > span {
+	color: #bbb;
+	font-size: .8em;
+	padding: 0 .5em;
+	background: #f5f2f0;
+	background: rgba(224, 224, 224, 0.2);
+	box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+	border-radius: .5em;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a:hover,
+div.code-toolbar > .toolbar > .toolbar-item > a:focus,
+div.code-toolbar > .toolbar > .toolbar-item > button:hover,
+div.code-toolbar > .toolbar > .toolbar-item > button:focus,
+div.code-toolbar > .toolbar > .toolbar-item > span:hover,
+div.code-toolbar > .toolbar > .toolbar-item > span:focus {
+	text-decoration: none;
+	color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.85), 0 0 16px rgba(255,255,255,0.5);
+}
+
+span.inline-color-wrapper {
+	/*
+	 * The background image is the following SVG inline in base 64:
+	 *
+	 * <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2 2">
+	 *     <path fill="gray" d="M0 0h2v2H0z"/>
+	 *     <path fill="white" d="M0 0h1v1H0zM1 1h1v1H1z"/>
+	 * </svg>
+	 *
+	 * SVG-inlining explained:
+	 * https://stackoverflow.com/a/21626701/7595472
+	 */
+	background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyIDIiPjxwYXRoIGZpbGw9ImdyYXkiIGQ9Ik0wIDBoMnYySDB6Ii8+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0wIDBoMXYxSDB6TTEgMWgxdjFIMXoiLz48L3N2Zz4=");
+	/* This is to prevent visual glitches where one pixel from the repeating pattern could be seen. */
+	background-position: center;
+	background-size: 110%;
+
+	display: inline-block;
+	height: 1.333ch;
+	width: 1.333ch;
+	margin: 0 .333ch;
+	box-sizing: border-box;
+	border: 1px solid white;
+	/* outline: 1px solid rgba(0,0,0,.5); */
+	overflow: hidden;
+}
+
+span.inline-color {
+	display: block;
+	/* To prevent visual glitches again */
+	height: 120%;
+	width: 120%;
+}
+/*endregion*/
+
+:root {
+    /* 尺寸 */
+    --page-width: 65%;
+    --page-margin: 15%;
+
+    /* 导航 */
+    --nav-height: 56px;
+    --nav-gap: 0; /* 0 表示紧贴 nav */
+
+    /* 间距 */
+    --gap-between: 5px; /* main 与 copyright 的间距 */
+    --copyright-min: 5vh; /* 版权区最小高度（用于计算） */
+    --copyright-max: 15vh; /* 版权区最大高度（用于计算） */
+
+    /* 视觉 */
+    --card-bg: rgba(0,0,0,0.5);
+    --card-radius: 25px;
+    --card-padding: 1% 2% 2%;
+    --card-padding-bottom: 2.5%;
+    --backdrop: blur(5px);
+    --muted: #999999;
+    --muted-dark: #555555;
+
+    /* 字体 */
+    --mono-font: "JetBrains Mono";
+    --tahoma-font: Tahoma, system-ui, sans-serif;
+
+    /* 背景图 */
+    --bg-img: url("bg.jpg");
+}
+
+/* 基础布局与盒模型 */
+html { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: inherit; }
+
+body {
+    margin: 0;
+    /* 为固定导航在文档流中预留空间，防止覆盖内容 */
+    padding-top: calc(var(--nav-height) + var(--nav-gap));
+    background-image: var(--bg-img);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    background-color: var(--muted-dark);
+    /* 禁止页面整体垂直滚动，#main 内滚 */
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+body.line-numbers { min-height: 100vh; }
+
+/* 公共卡片外观（毛玻璃） */
+#main, #copyright, .notice, .card {
+    display: block;
+    background: var(--card-bg);
+    backdrop-filter: var(--backdrop);
+    border-radius: var(--card-radius);
+    padding: var(--card-padding);
+    box-sizing: border-box;
+}
+
+/* 顶部导航（固定） */
+#topnav {
+    position: fixed;
+    left: var(--page-margin);
+    right: var(--page-margin);
+    top: 0;
+    height: var(--nav-height);
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: var(--backdrop);
+    border-radius: calc(var(--card-radius) / 2);
+    /* 移除底部圆角，避免与下面内容边缘重叠 */
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    z-index: 60;
+    box-sizing: border-box;
+}
+
+#topnav .nav-inner { display:flex; gap:1rem; align-items:center; width:100%; }
+#topnav a { color: var(--muted); text-decoration:none; padding:0.4rem 0.6rem; transition: color .15s ease, text-shadow .2s ease; }
+#topnav a:hover { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.85), 0 0 16px rgba(255,255,255,0.5); }
+
+/* 占位器：用于在文档流中为固定导航预留空间，避免覆盖后续内容 */
+#nav-spacer { height: var(--nav-height); margin: 0 var(--page-margin); pointer-events: none; }
+
+/* 主内容：流式布局，顶部紧贴导航，内部滚动 */
+#main {
+    width: auto;
+    /* 移除顶部圆角，避免与固定导航圆角叠加 */
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    /* 顶部间距由 body 的 padding-top 提供，避免重叠 */
+    margin-top: 0;
+    padding-top: 0;
+    margin-left: var(--page-margin);
+    margin-right: var(--page-margin);
+    margin-bottom: calc(var(--copyright-min) + var(--gap-between));
+    max-width: calc(100% - 2 * var(--page-margin));
+    overflow-y: auto;   /* 内部滚动 */
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable both-edges;
+    padding-bottom: var(--gap-between);
+    /* 可用高度 = 视口 - 导航高度 - 版权最小高度 - 间隙 */
+    max-height: calc(100vh - var(--nav-height) - var(--copyright-max) - var(--gap-between));
+    z-index: 10;
+}
+
+/* 滚动条样式（仅影响 #main） */
+#main::-webkit-scrollbar { width:8px; height:8px; }
+#main::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius:4px; }
+#main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius:4px; }
+#main { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.10) rgba(255,255,255,0.02); }
+
+/* 版权区（固定底部） */
+#copyright {
+    position: fixed;
+    left: var(--page-margin);
+    right: var(--page-margin);
+    bottom: 0;
+    min-height: var(--copyright-min);
+    max-height: var(--copyright-max);
+    padding: 1% 2% var(--card-padding-bottom);
+    z-index: 30;
+}
+
+#copyright p { text-align:center; margin:0; }
+h1 { text-align: center; margin: 0; }
+p,h2,h3,h4,h5,h6 { text-align: left;  }
+
+/* 字体 & 文本 */
+@font-face{ font-family: "JetBrains Mono"; src: url("JetBrainsMono.ttf") format("truetype"); }
+.chinese{ font-family: var(--tahoma-font); color: var(--muted); }
+.english{ font-family: var(--mono-font), system-ui; color: var(--muted); }
+.fl { text-align: left; }
+.fc { text-align: center; }
+.fr { text-align: right; }
+a { color: var(--muted); }
+.funny:active { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.85), 0 0 16px rgba(255,255,255,0.5); }
+code, pre{ font-family: var(--mono-font), system-ui; }
+
+/* 使带 class="chinese" 的有序/无序列表整体居中，且点/序号与文本一起居中显示 */
+hr { border: 1px solid var(--muted); }
+ul { margin: 0 auto;width: fit-content;color: var(--muted); }
+
+.no_print { display: none; }
