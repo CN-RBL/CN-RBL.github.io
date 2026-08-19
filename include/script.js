@@ -22605,6 +22605,11 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
     let isTimeElapsed = false;
     let overlay, rejectOverlay, btnAgree, btnReject, btnReconsider;
     let licenseText, progressBar, readProgress;
+    let licenseGuardObserver = null;
+	let gateMode = 'main';
+	let rejectPending = false;
+	let rejectCheckTimer = null;
+	let guardRepairScheduled = false;
 
     // ========== 工具函数 ==========
     function hasAgreed() {
@@ -22623,9 +22628,37 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
         }
     }
 
+	function isCompatibilityModeBrowser() {
+		const userAgent = navigator.userAgent || '';
+		return /360(?:SE|EE|极速)|QHBrowser|QihooBrowser/i.test(userAgent);
+	}
+
+	function showBrowserModeHint() {
+		if (!isCompatibilityModeBrowser() || document.getElementById('browserModeHint')) {
+			return;
+		}
+
+		const hint = document.createElement('div');
+		hint.id = 'browserModeHint';
+		hint.className = 'browser-mode-hint';
+		hint.setAttribute('role', 'status');
+		hint.innerHTML = `
+			<span>检测到当前浏览器可能处于兼容模式，请切换到“极速模式”后刷新页面。</span>
+			<button type="button" aria-label="关闭提示">知道了</button>
+		`;
+		hint.querySelector('button').addEventListener('click', function() {
+			hint.remove();
+		});
+		document.body.appendChild(hint);
+	}
+
     // ========== 动态注入样式（统一使用站点主题变量） ==========
     function injectStyles() {
+		if (document.getElementById('licenseModalStyles')) {
+			return;
+		}
         const style = document.createElement('style');
+		style.id = 'licenseModalStyles';
         style.textContent = `
             /* ===== 遮罩层（全屏暗色毛玻璃） ===== */
             .license-overlay {
@@ -22635,8 +22668,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 width: 100%;
                 height: 100%;
                 background: var(--license-overlay-bg, rgba(0, 0, 0, 0.12));
-                backdrop-filter: blur(3px);
                 -webkit-backdrop-filter: blur(3px);
+				backdrop-filter: blur(3px);
                 display: none;
                 justify-content: center;
                 align-items: center;
@@ -22649,9 +22682,9 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
             /* ===== 弹窗卡片 ===== */
             .license-modal {
-                background: var(--license-card-bg, rgba(12, 16, 20, 0.42));
-                backdrop-filter: blur(14px);
+				background: var(--license-card-bg, rgba(12, 16, 20, 0.88));
                 -webkit-backdrop-filter: blur(14px);
+				backdrop-filter: blur(14px);
                 border-radius: 28px;
                 max-width: 560px;
                 width: 100%;
@@ -22669,15 +22702,27 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 to   { opacity: 1; transform: scale(1) translateY(0); }
             }
 
+			@keyframes licenseIntroItem {
+				from { opacity: 0; transform: translateY(12px); }
+				to { opacity: 1; transform: translateY(0); }
+			}
+
             /* ===== 头部 ===== */
             .license-modal-header {
                 text-align: center;
                 margin-bottom: 12px;
             }
+			.license-modal-header > * {
+				display: block;
+				width: 100%;
+				text-align: center;
+			}
             .license-modal-header .icon {
                 font-size: 40px;
                 display: block;
                 margin-bottom: 4px;
+				opacity: 0;
+				animation: licenseIntroItem 0.45s ease-out 0.18s forwards;
             }
             .license-modal-header h2 {
                 font-size: 24px;
@@ -22685,12 +22730,23 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 color: var(--panel-text, #e0e0e0);
                 margin: 0;
                 font-family: "JetBrains Mono", system-ui, sans-serif;
+				opacity: 0;
+				animation: licenseIntroItem 0.45s ease-out 0.38s forwards;
             }
             .license-modal-header .sub {
                 font-size: 14px;
                 color: var(--license-muted, #999999);
                 margin-top: 2px;
                 font-family: Tahoma, system-ui, sans-serif;
+				opacity: 0;
+				animation: licenseIntroItem 0.45s ease-out 0.58s forwards;
+			}
+			.license-modal-header .intro-copy {
+				color: var(--license-text, #edf3ff);
+				font-size: 16px;
+				margin: 2px 0 0;
+				opacity: 0;
+				animation: licenseIntroItem 0.45s ease-out 0.48s forwards;
             }
 
             /* ===== 进度条 ===== */
@@ -22722,8 +22778,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
             /* ===== 协议文本（滚动区） ===== */
             .license-text {
                 background: var(--license-text-bg, rgba(0, 0, 0, 0.35));
-                backdrop-filter: blur(4px);
                 -webkit-backdrop-filter: blur(4px);
+				backdrop-filter: blur(4px);
                 border-radius: 16px;
                 padding: 18px 20px;
                 max-height: 200px;
@@ -22737,16 +22793,21 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 font-family: Tahoma, system-ui, sans-serif;
             }
             .license-text::-webkit-scrollbar {
-                width: 6px;
+				width: 8px;
+				height: 8px;
             }
             .license-text::-webkit-scrollbar-track {
-                background: rgba(255, 255, 255, 0.02);
-                border-radius: 10px;
+				background: rgba(255,255,255,0.02);
+				border-radius: 4px;
             }
             .license-text::-webkit-scrollbar-thumb {
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 10px;
+				background: rgba(255,255,255,0.10);
+				border-radius: 4px;
             }
+			.license-text {
+				scrollbar-width: thin;
+				scrollbar-color: rgba(255,255,255,0.10) rgba(255,255,255,0.02);
+			}
             .license-text h1, .license-text h2, .license-text h3 {
                 color: var(--panel-text, #e0e0e0);
                 margin-top: 12px;
@@ -22794,6 +22855,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 backdrop-filter: blur(4px);
                 -webkit-backdrop-filter: blur(4px);
                 border: 1px solid var(--license-border, rgba(255, 255, 255, 0.08));
+				-webkit-appearance: none;
+				appearance: none;
             }
             .license-actions button:focus-visible {
                 outline: 2px solid var(--panel-accent, #2b6cb0);
@@ -22847,8 +22910,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 width: 100%;
                 height: 100%;
                 background: rgba(0, 0, 0, 0.78);
-                backdrop-filter: blur(12px);
                 -webkit-backdrop-filter: blur(12px);
+				backdrop-filter: blur(12px);
                 display: none;
                 justify-content: center;
                 align-items: center;
@@ -22859,9 +22922,9 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 display: flex;
             }
             .license-reject-card {
-                background: var(--license-card-bg, rgba(12, 16, 20, 0.78));
-                backdrop-filter: blur(12px);
+				background: var(--license-card-bg, rgba(12, 16, 20, 0.88));
                 -webkit-backdrop-filter: blur(12px);
+				backdrop-filter: blur(12px);
                 border-radius: 28px;
                 max-width: 420px;
                 width: 100%;
@@ -22912,7 +22975,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 transform: scale(0.97);
             }
 
-            @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+			@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
                 .license-overlay,
                 .license-modal,
                 .license-text,
@@ -22930,6 +22993,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                     padding: 24px 16px 20px;
                 }
                 .license-modal-header h2 {
+					text-align: center;
                     font-size: 21px;
                 }
                 .license-text {
@@ -22959,6 +23023,19 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                     padding: 12px 0;
                 }
             }
+
+			@media (prefers-reduced-motion: reduce) {
+				.license-modal,
+				.license-modal-header .icon,
+				.license-modal-header h2,
+				.license-modal-header .intro-copy,
+				.license-modal-header .sub {
+					animation: none;
+					opacity: 1;
+					transform: none;
+				}
+			}
+
         `;
         document.head.appendChild(style);
     }
@@ -22980,7 +23057,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
         header.className = 'license-modal-header';
         header.innerHTML = `
             <span class="icon">📄</span>
-            <h2>${CONFIG.licenseTitle}</h2>
+			<h2>Hi！</h2>
+			<div class="intro-copy">我们需要你同意一段协议</div>
             <div class="sub">${CONFIG.licenseSub}</div>
         `;
         modal.appendChild(header);
@@ -23071,22 +23149,17 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
         const scrollTop = licenseText.scrollTop;
         const scrollHeight = licenseText.scrollHeight - licenseText.clientHeight;
         let percent = 0;
-        if (scrollHeight > 0) {
+		if (scrollHeight > 0) {
             percent = Math.min(100, Math.round((scrollTop / scrollHeight) * 100));
+		} else {
+			percent = 100;
         }
         readProgress.textContent = percent + '%';
         progressBar.style.width = percent + '%';
 
         if (percent >= 100) {
-            if (!isScrolledToBottom) {
-                isScrolledToBottom = true;
-                updateAgreeButton();
-            }
-        } else {
-            if (isScrolledToBottom) {
-                isScrolledToBottom = false;
-                updateAgreeButton();
-            }
+			isScrolledToBottom = true;
+			updateAgreeButton();
         }
     }
 
@@ -23097,29 +23170,124 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
         }, CONFIG.minReadTime);
     }
 
+    function ensureLicenseGate() {
+        if (hasAgreed()) {
+            return;
+        }
+
+		const currentOverlay = document.getElementById('licenseOverlay');
+		const currentRejectOverlay = document.getElementById('licenseRejectOverlay');
+		const currentAgreeButton = document.getElementById('licenseBtnAgree');
+		const currentReconsiderButton = document.getElementById('licenseBtnReconsider');
+
+		if (currentOverlay && currentRejectOverlay && currentAgreeButton && currentReconsiderButton) {
+			overlay = currentOverlay;
+			rejectOverlay = currentRejectOverlay;
+			btnAgree = currentAgreeButton;
+			btnReconsider = currentReconsiderButton;
+			if (gateMode === 'reject') {
+				overlay.classList.remove('active');
+				rejectOverlay.classList.add('active');
+			} else {
+				rejectOverlay.classList.remove('active');
+				overlay.classList.add('active');
+			}
+			document.body.style.overflow = 'hidden';
+            return;
+        }
+
+		if (currentOverlay) currentOverlay.remove();
+		if (currentRejectOverlay) currentRejectOverlay.remove();
+
+        injectStyles();
+        buildModal();
+
+        licenseText.addEventListener('scroll', handleScroll);
+        btnAgree.addEventListener('click', handleAgree);
+        btnReject.addEventListener('click', handleReject);
+        btnReconsider.addEventListener('click', handleReconsider);
+
+		if (gateMode === 'reject') {
+			rejectOverlay.classList.add('active');
+		} else {
+			overlay.classList.add('active');
+		}
+        document.body.style.overflow = 'hidden';
+        startTimer();
+        updateAgreeButton();
+    }
+
+    function wireLicenseGuard() {
+        if (licenseGuardObserver) {
+            licenseGuardObserver.disconnect();
+        }
+
+        licenseGuardObserver = new MutationObserver(function() {
+            if (hasAgreed()) {
+                if (licenseGuardObserver) {
+                    licenseGuardObserver.disconnect();
+                }
+                return;
+            }
+
+			const currentOverlay = document.getElementById('licenseOverlay');
+			const currentRejectOverlay = document.getElementById('licenseRejectOverlay');
+			const agreeButtonPresent = !!document.getElementById('licenseBtnAgree');
+			const reconsiderButtonPresent = !!document.getElementById('licenseBtnReconsider');
+			const gateMissing = !currentOverlay || !currentRejectOverlay || !agreeButtonPresent || !reconsiderButtonPresent;
+			const mainGateHidden = gateMode === 'main' && currentOverlay && !currentOverlay.classList.contains('active');
+			const rejectGateHidden = gateMode === 'reject' && currentRejectOverlay && !currentRejectOverlay.classList.contains('active');
+
+			if (gateMissing || mainGateHidden || rejectGateHidden) {
+				if (guardRepairScheduled) {
+					return;
+				}
+				guardRepairScheduled = true;
+                setTimeout(function() {
+					guardRepairScheduled = false;
+					if (!hasAgreed()) {
+                        ensureLicenseGate();
+                    }
+                }, 0);
+            }
+        });
+
+		licenseGuardObserver.observe(document.body, { attributes: true, childList: true, subtree: true, attributeFilter: ['class'] });
+    }
+
     function handleAgree() {
         if (btnAgree.disabled) return;
         saveAgreed();
+		gateMode = 'main';
+		rejectPending = false;
         overlay.classList.remove('active');
         rejectOverlay.classList.remove('active');
         document.body.style.overflow = '';
     }
 
     function tryCloseWindow() {
+		if (rejectPending) {
+			return true;
+		}
+
+		rejectPending = true;
         try {
             window.close();
             let checkCount = 0;
             const maxChecks = 6;
-            const interval = setInterval(function() {
+			rejectCheckTimer = setInterval(function() {
                 checkCount++;
                 if (window.closed) {
-                    clearInterval(interval);
+					clearInterval(rejectCheckTimer);
+					rejectCheckTimer = null;
                     return;
                 }
                 if (checkCount >= maxChecks) {
-                    clearInterval(interval);
+					clearInterval(rejectCheckTimer);
+					rejectCheckTimer = null;
                     setTimeout(function() {
                         if (!window.closed) {
+							gateMode = 'reject';
                             rejectOverlay.classList.add('active');
                             document.body.style.overflow = 'hidden';
                         }
@@ -23128,11 +23296,17 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
             }, 200);
             return true;
         } catch (e) {
+			rejectPending = false;
             return false;
         }
     }
 
     function handleReject() {
+		if (rejectPending || gateMode === 'reject' || rejectOverlay.classList.contains('active')) {
+			return;
+		}
+		gateMode = 'reject';
+		btnReject.disabled = true;
         overlay.classList.remove('active');
         const closed = tryCloseWindow();
         if (!closed) {
@@ -23142,6 +23316,12 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
     }
 
     function handleReconsider() {
+		gateMode = 'main';
+		rejectPending = false;
+		if (rejectCheckTimer) {
+			clearInterval(rejectCheckTimer);
+			rejectCheckTimer = null;
+		}
         rejectOverlay.classList.remove('active');
         // 重置滚动和计时状态
         isScrolledToBottom = false;
@@ -23149,6 +23329,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
         licenseText.scrollTop = 0;
         readProgress.textContent = '0%';
         progressBar.style.width = '0%';
+		btnReject.disabled = false;
+		handleScroll();
         updateAgreeButton();
         startTimer();
         overlay.classList.add('active');
@@ -23157,6 +23339,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
     // ========== 初始化 ==========
     function init() {
+		showBrowserModeHint();
         if (hasAgreed()) {
             return; // 已同意，不弹窗
         }
@@ -23171,6 +23354,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
         btnAgree.addEventListener('click', handleAgree);
         btnReject.addEventListener('click', handleReject);
         btnReconsider.addEventListener('click', handleReconsider);
+        wireLicenseGuard();
 
         // 阻止 ESC 关闭
         document.addEventListener('keydown', function(e) {
@@ -23195,6 +23379,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
         // 启动计时器
         startTimer();
         // 初始按钮状态
+		handleScroll();
         updateAgreeButton();
 
         console.log('许可协议弹窗已加载（风格已适配）');
