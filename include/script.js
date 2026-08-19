@@ -22580,7 +22580,6 @@ Prism.languages.yang = {
     const CONFIG = {
         storageKey: 'licenseAgreed',          // localStorage 键名
         minReadTime: 6500,                    // 最短阅读时间（毫秒）
-        licenseTitle: '用户许可协议',
         licenseSub: '请仔细阅读，阅读完全文后方可同意',
         // 协议内容（支持 HTML）
         licenseHTML: `
@@ -22627,30 +22626,6 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
             // 浏览器隐私模式下忽略，避免异常中断页面交互
         }
     }
-
-	function isCompatibilityModeBrowser() {
-		const userAgent = navigator.userAgent || '';
-		return /360(?:SE|EE|极速)|QHBrowser|QihooBrowser/i.test(userAgent);
-	}
-
-	function showBrowserModeHint() {
-		if (!isCompatibilityModeBrowser() || document.getElementById('browserModeHint')) {
-			return;
-		}
-
-		const hint = document.createElement('div');
-		hint.id = 'browserModeHint';
-		hint.className = 'browser-mode-hint';
-		hint.setAttribute('role', 'status');
-		hint.innerHTML = `
-			<span>检测到当前浏览器可能处于兼容模式，请切换到“极速模式”后刷新页面。</span>
-			<button type="button" aria-label="关闭提示">知道了</button>
-		`;
-		hint.querySelector('button').addEventListener('click', function() {
-			hint.remove();
-		});
-		document.body.appendChild(hint);
-	}
 
     // ========== 动态注入样式（统一使用站点主题变量） ==========
     function injectStyles() {
@@ -23339,7 +23314,6 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
     // ========== 初始化 ==========
     function init() {
-		showBrowserModeHint();
         if (hasAgreed()) {
             return; // 已同意，不弹窗
         }

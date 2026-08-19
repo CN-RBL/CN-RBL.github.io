@@ -841,43 +841,6 @@ body.line-numbers { min-height: 100vh; }
 #main h6,
 #main li { text-align: left; }
 
-/* 浏览器内核提示 */
-.browser-mode-hint {
-    position: fixed;
-    left: 50%;
-    bottom: 18px;
-    z-index: 100001;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: min(520px, calc(100% - 32px));
-    padding: 12px 14px;
-    transform: translateX(-50%);
-    border: 1px solid var(--panel-border);
-    border-radius: 12px;
-    background: rgba(12, 16, 20, 0.94);
-    color: var(--panel-text);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
-    font: 13px/1.5 Tahoma, system-ui, sans-serif;
-}
-.browser-mode-hint span { flex: 1; }
-.browser-mode-hint button {
-    flex: 0 0 auto;
-    padding: 6px 10px;
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    background: var(--panel-accent);
-    color: #fff;
-    cursor: pointer;
-}
-@media (max-width: 480px) {
-    .browser-mode-hint {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 8px;
-    }
-    .browser-mode-hint button { align-self: flex-end; }
-}
 
 /* 字体 & 文本 */
 @font-face{ font-family: "JetBrains Mono"; src: url("JetBrainsMono.ttf") format("truetype"); }
