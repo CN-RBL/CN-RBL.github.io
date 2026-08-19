@@ -9,7 +9,11 @@
 
 @font-face {
 	font-family: "JetBrains Mono";
-	src: url("JetBrainsMono.ttf") format("truetype");
+    src: url("JetBrainsMono.woff2") format("woff2"),
+         url("JetBrainsMono.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
 }
 
 code[class*="language-"],
@@ -322,7 +326,7 @@ span.inline-color {
     --license-text: #edf3ff;
 
     /* 字体 */
-    --mono-font: "JetBrains Mono";
+    --mono-font: "JetBrains Mono", monospace;
     --tahoma-font: Tahoma, system-ui, sans-serif;
 
     /* 背景图 */
@@ -363,8 +367,8 @@ iframe {
 
 body {
     margin: 0;
-    /* 为固定导航在文档流中预留空间，防止覆盖内容 */
-    padding-top: calc(var(--nav-height) + var(--nav-gap));
+    /* 由 #nav-spacer 为固定导航预留空间 */
+    padding-top: 0;
     background-image: var(--bg-img);
     background-size: cover;
     background-repeat: no-repeat;
@@ -473,19 +477,20 @@ body.line-numbers { min-height: 100vh; }
     width: min(1200px, calc(100% - 2 * var(--page-margin)));
     margin-left: auto;
     margin-right: auto;
-    /* 移除顶部圆角，避免与固定导航圆角叠加 */
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    /* 顶部间距由 body 的 padding-top 提供，避免重叠 */
-    margin-top: 0;
+    /* 与固定导航重叠 1px，避免边界出现细缝 */
+    margin-top: -1px;
+    border: 0;
+    border-radius: 0 0 var(--card-radius) var(--card-radius);
+    border-bottom-left-radius: var(--card-radius);
+    border-bottom-right-radius: var(--card-radius);
+    background-clip: padding-box;
+    overflow: hidden auto;
+    clip-path: inset(0 round 0 0 var(--card-radius) var(--card-radius));
     padding-top: 1.25rem;
     margin-bottom: calc(var(--copyright-min) + var(--gap-between));
-    overflow-y: auto;   /* 内部滚动 */
-    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    scrollbar-gutter: stable;
     padding-bottom: var(--gap-between);
-    /* 可用高度 = 视口 - 导航高度 - 版权最小高度 - 间隙 */
+    /* 可用高度 = 视口 - 导航高度 - 版权最大高度 - 间隙 */
     max-height: calc(100vh - var(--nav-height) - var(--copyright-max) - var(--gap-between));
     z-index: 10;
     color: var(--panel-text);
@@ -524,6 +529,12 @@ body.line-numbers { min-height: 100vh; }
     font-size: clamp(1.35rem, 2vw, 1.9rem);
     border-bottom: 1px solid rgba(255,255,255,0.08);
     padding-bottom: 0.35rem;
+}
+
+#main .notice h2 {
+    border-bottom: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
 }
 
 #main > h3,
@@ -592,6 +603,69 @@ body.line-numbers { min-height: 100vh; }
     padding-bottom: 0;
 }
 
+.article-card {
+    padding: 0.95rem 1.1rem 0.85rem;
+}
+.article-card-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+.article-card-main > a {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow-wrap: anywhere;
+}
+.article-badges {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 0 0 auto;
+    padding: 0.22rem 0.42rem;
+    border: 1px solid var(--panel-border);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.045);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.article-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.6rem;
+    height: 1.35rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    line-height: 1;
+    font-family: var(--mono-font), system-ui, sans-serif;
+}
+.article-badge-hot {
+    color: #ffd0a8;
+    background: rgba(220, 112, 55, 0.18);
+    border: 1px solid rgba(220, 112, 55, 0.28);
+}
+.article-badge-new {
+    color: #b9dcff;
+    background: rgba(73, 139, 203, 0.18);
+    border: 1px solid rgba(73, 139, 203, 0.28);
+}
+.article-author {
+    display: block;
+    margin-top: 0.45rem;
+    color: var(--panel-muted);
+    font: 0.78rem/1.4 var(--tahoma-font);
+}
+
+@media (max-width: 640px) {
+    .article-card-main {
+        align-items: flex-start;
+    }
+    .article-badges {
+        margin-top: 0.05rem;
+    }
+}
+
 @media (max-width: 1200px) {
     :root {
         --page-margin: 8%;
@@ -655,7 +729,7 @@ body.line-numbers { min-height: 100vh; }
 
 @media (max-width: 640px) {
     body {
-        padding-top: 7.5rem;
+        padding-top: 0;
         overflow-y: auto;
     }
 
@@ -690,13 +764,14 @@ body.line-numbers { min-height: 100vh; }
     #copyright {
         width: calc(100% - 6vw);
         max-width: none;
-        border-radius: 18px;
+        border-radius: 0 0 18px 18px;
     }
 
     #main {
         padding: 1rem 1rem 1.25rem;
         max-height: none;
         overflow-y: visible;
+        clip-path: inset(0 round 0 0 18px 18px);
     }
 
     #main > h1,
@@ -755,11 +830,16 @@ body.line-numbers { min-height: 100vh; }
         max-height: none;
         padding: 0.85rem 1rem 1rem;
     }
+
+    #back-to-top {
+        right: 1rem;
+        bottom: 1rem;
+    }
 }
 
 @media (max-width: 420px) {
     body {
-        padding-top: 7rem;
+        padding-top: 0;
     }
 
     #nav-spacer {
@@ -779,6 +859,7 @@ body.line-numbers { min-height: 100vh; }
 
     #main {
         padding: 0.85rem 0.85rem 1rem;
+        clip-path: inset(0 round 0 0 18px 18px);
     }
 
     #main ul,
@@ -795,9 +876,61 @@ body.line-numbers { min-height: 100vh; }
 
 /* 滚动条样式（仅影响 #main） */
 #main::-webkit-scrollbar { width:8px; height:8px; }
-#main::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius:4px; }
+#main::-webkit-scrollbar-track { background: transparent; border-radius:4px; }
 #main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius:4px; }
-#main { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.10) rgba(255,255,255,0.02); }
+#main { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.10) transparent; }
+
+/* 回到顶部：桌面端回到 #main，移动端回到页面顶部 */
+#back-to-top {
+    position: fixed;
+    right: max(1rem, var(--page-margin));
+    bottom: calc(var(--copyright-min) + 1rem);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid var(--panel-border);
+    border-radius: 50%;
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(0, 0, 0, 0.78);
+    color: var(--panel-text);
+    font: inherit;
+    line-height: 1;
+    text-align: center;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(0.5rem);
+    transition: opacity .2s ease, visibility .2s ease, transform .2s ease, background-color .2s ease;
+    z-index: 50;
+}
+#back-to-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+#back-to-top:hover,
+#back-to-top:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+#back-to-top:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+}
+#back-to-top svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     #main, #copyright, .notice, .card, #topnav {
@@ -817,10 +950,20 @@ body.line-numbers { min-height: 100vh; }
     min-height: var(--copyright-min);
     max-height: var(--copyright-max);
     padding: 1% 2% var(--card-padding-bottom);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--panel-text);
     z-index: 30;
 }
 
-#copyright p { text-align:center; margin:0; }
+#copyright p {
+    width: 100%;
+    margin: 0;
+    color: var(--panel-text);
+    text-align: center;
+}
 #main p::first-letter,
 #main p:first-of-type::first-letter {
     float: none;
@@ -843,9 +986,15 @@ body.line-numbers { min-height: 100vh; }
 
 
 /* 字体 & 文本 */
-@font-face{ font-family: "JetBrains Mono"; src: url("JetBrainsMono.ttf") format("truetype"); }
-.chinese{ font-family: var(--tahoma-font); color: var(--muted); }
-.english{ font-family: var(--mono-font), system-ui; color: var(--muted); }
+.chinese {
+	color: var(--muted);
+	font-family: var(--tahoma-font);
+}
+.english {
+	color: var(--muted);
+	font-family: "JetBrains Mono", monospace;
+}
+
 .fl { text-align: left; }
 .fc { text-align: center; }
 .fr { text-align: right; }

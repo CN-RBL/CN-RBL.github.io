@@ -10,7 +10,11 @@ https://prismjs.com/download#themes=prism-dark&languages=markup+css+clike+javasc
 
 @font-face {
 	font-family: "JetBrains Mono";
-	src: url("JetBrainsMono.ttf") format("truetype");
+	src: url("JetBrainsMono.woff2") format("woff2"),
+		 url("JetBrainsMono.ttf") format("truetype");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
 }
 
 code[class*="language-"],

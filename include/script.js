@@ -22609,6 +22609,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 	let rejectPending = false;
 	let rejectCheckTimer = null;
 	let guardRepairScheduled = false;
+	let readTimer = null;
 
     // ========== 工具函数 ==========
     function hasAgreed() {
@@ -22656,21 +22657,24 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
             }
 
             /* ===== 弹窗卡片 ===== */
-            .license-modal {
-				background: var(--license-card-bg, rgba(12, 16, 20, 0.88));
+			.license-modal,
+			.license-reject-card {
+				background: var(--license-card-bg, rgba(12, 16, 20, 0.42));
                 -webkit-backdrop-filter: blur(14px);
 				backdrop-filter: blur(14px);
                 border-radius: 28px;
-                max-width: 560px;
                 width: 100%;
-                padding: 32px 28px 28px;
                 box-shadow: 0 40px 80px var(--panel-shadow, rgba(0, 0, 0, 0.45));
+				border: 1px solid var(--license-border, rgba(255, 255, 255, 0.1));
+				box-sizing: border-box;
+			}
+			.license-modal {
+				max-width: 560px;
+				padding: 32px 28px 28px;
                 animation: licenseFadeIn 0.35s ease-out;
                 max-height: 90vh;
                 display: flex;
                 flex-direction: column;
-                box-sizing: border-box;
-                border: 1px solid var(--license-border, rgba(255, 255, 255, 0.1));
             }
             @keyframes licenseFadeIn {
                 from { opacity: 0; transform: scale(0.94) translateY(20px); }
@@ -22684,17 +22688,31 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
             /* ===== 头部 ===== */
             .license-modal-header {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
                 text-align: center;
                 margin-bottom: 12px;
             }
 			.license-modal-header > * {
 				display: block;
-				width: 100%;
-				text-align: center;
+				width: auto;
+				max-width: 100%;
+				align-self: center;
+				text-align: center !important;
 			}
             .license-modal-header .icon {
-                font-size: 40px;
-                display: block;
+				font-size: 40px;
+				display: grid;
+				place-items: center;
+				width: fit-content;
+				min-width: 0;
+				height: 48px;
+				margin-left: auto;
+				margin-right: auto;
+				line-height: 1;
+				font-family: "JetBrains Mono", system-ui, sans-serif;
+				font-variant-emoji: text;
                 margin-bottom: 4px;
 				opacity: 0;
 				animation: licenseIntroItem 0.45s ease-out 0.18s forwards;
@@ -22704,6 +22722,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 font-weight: 700;
                 color: var(--panel-text, #e0e0e0);
                 margin: 0;
+				line-height: 1.2;
                 font-family: "JetBrains Mono", system-ui, sans-serif;
 				opacity: 0;
 				animation: licenseIntroItem 0.45s ease-out 0.38s forwards;
@@ -22712,6 +22731,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 font-size: 14px;
                 color: var(--license-muted, #999999);
                 margin-top: 2px;
+				width: 100%;
                 font-family: Tahoma, system-ui, sans-serif;
 				opacity: 0;
 				animation: licenseIntroItem 0.45s ease-out 0.58s forwards;
@@ -22720,6 +22740,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 				color: var(--license-text, #edf3ff);
 				font-size: 16px;
 				margin: 2px 0 0;
+				width: 100%;
+				text-align: center !important;
 				opacity: 0;
 				animation: licenseIntroItem 0.45s ease-out 0.48s forwards;
             }
@@ -22884,9 +22906,9 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0, 0, 0, 0.78);
-                -webkit-backdrop-filter: blur(12px);
-				backdrop-filter: blur(12px);
+				background: var(--license-overlay-bg, rgba(0, 0, 0, 0.12));
+                -webkit-backdrop-filter: blur(3px);
+				backdrop-filter: blur(3px);
                 display: none;
                 justify-content: center;
                 align-items: center;
@@ -22897,21 +22919,21 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 display: flex;
             }
             .license-reject-card {
-				background: var(--license-card-bg, rgba(12, 16, 20, 0.88));
-                -webkit-backdrop-filter: blur(12px);
-				backdrop-filter: blur(12px);
-                border-radius: 28px;
                 max-width: 420px;
-                width: 100%;
-                padding: 40px 32px 32px;
+				padding: 32px 28px 28px;
                 text-align: center;
-                box-shadow: 0 40px 80px var(--panel-shadow, rgba(0, 0, 0, 0.45));
                 animation: licenseFadeIn 0.3s ease-out;
-                border: 1px solid var(--license-border, rgba(255, 255, 255, 0.08));
             }
             .license-reject-card .big-icon {
-                font-size: 56px;
-                display: block;
+				font-size: 56px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 100%;
+				height: 68px;
+				text-align: center;
+				line-height: 1;
+				font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
                 margin-bottom: 10px;
             }
             .license-reject-card h3 {
@@ -23031,8 +23053,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
         const header = document.createElement('div');
         header.className = 'license-modal-header';
         header.innerHTML = `
-            <span class="icon">📄</span>
-			<h2>Hi！</h2>
+			<span class="icon" aria-hidden="true">📄︎</span>
+			<h2>Hi!</h2>
 			<div class="intro-copy">我们需要你同意一段协议</div>
             <div class="sub">${CONFIG.licenseSub}</div>
         `;
@@ -23086,7 +23108,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
         rejectOverlay.id = 'licenseRejectOverlay';
         rejectOverlay.innerHTML = `
             <div class="license-reject-card">
-                <span class="big-icon">🚫</span>
+				<span class="big-icon" aria-hidden="true">🚫</span>
                 <h3>您拒绝了许可协议</h3>
                 <p>您必须同意许可协议才能继续访问本网站。<br />如果您改变主意，可以点击下方按钮重新考虑。</p>
                 <button class="btn-reconsider" id="licenseBtnReconsider">🔄 重新考虑</button>
@@ -23139,7 +23161,11 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
     }
 
     function startTimer() {
-        setTimeout(function() {
+		if (readTimer) {
+			clearTimeout(readTimer);
+		}
+		readTimer = setTimeout(function() {
+			readTimer = null;
             isTimeElapsed = true;
             updateAgreeButton();
         }, CONFIG.minReadTime);
@@ -23236,7 +23262,11 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 		gateMode = 'main';
 		rejectPending = false;
         overlay.classList.remove('active');
-        rejectOverlay.classList.remove('active');
+		rejectOverlay.classList.remove('active');
+		if (readTimer) {
+			clearTimeout(readTimer);
+			readTimer = null;
+		}
         document.body.style.overflow = '';
     }
 
@@ -23297,6 +23327,11 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 			clearInterval(rejectCheckTimer);
 			rejectCheckTimer = null;
 		}
+		if (readTimer) {
+			clearTimeout(readTimer);
+			readTimer = null;
+		}
+		overlay.classList.add('active');
         rejectOverlay.classList.remove('active');
         // 重置滚动和计时状态
         isScrolledToBottom = false;
@@ -23305,10 +23340,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
         readProgress.textContent = '0%';
         progressBar.style.width = '0%';
 		btnReject.disabled = false;
-		handleScroll();
         updateAgreeButton();
         startTimer();
-        overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
 
@@ -23369,9 +23402,79 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 })();
 /* #endregion */
 
-const pageWidth = document.documentElement.scrollWidth;
-const pageHeight = document.documentElement.scrollHeight;
-console.info(`页面宽度: ${pageWidth}px, 页面高度: ${pageHeight}px`);
-if (pageWidth === 1520 && pageHeight === 740) {
-	console.info(`您当前页面大小是最佳浏览大小！`)
-}
+/* 回到顶部按钮：根据页面布局选择 #main 或 window 作为滚动容器 */
+(function () {
+	'use strict';
+
+	function initBackToTop() {
+		var main = document.getElementById('main');
+		var nav = document.getElementById('topnav');
+		var spacer = document.getElementById('nav-spacer');
+		if (!main || document.getElementById('back-to-top')) {
+			return;
+		}
+
+		function syncNavSpacer() {
+			if (nav && spacer) {
+				spacer.style.height = nav.offsetHeight + 'px';
+			}
+		}
+
+		var button = document.createElement('button');
+		button.id = 'back-to-top';
+		button.type = 'button';
+		button.setAttribute('aria-label', '回到顶部');
+		button.title = '回到顶部';
+		button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 11 7-7 7 7"></path><path d="M12 4v16"></path></svg>';
+		document.body.appendChild(button);
+
+		function usesMainScroll() {
+			return window.matchMedia('(min-width: 981px)').matches && main.scrollHeight > main.clientHeight;
+		}
+
+		function getScrollTop() {
+			return usesMainScroll() ? main.scrollTop : window.scrollY;
+		}
+
+		function updateVisibility() {
+			button.classList.toggle('is-visible', getScrollTop() > 160);
+		}
+
+		button.addEventListener('click', function () {
+			if (usesMainScroll()) {
+				main.scrollTo({ top: 0, behavior: 'smooth' });
+			} else {
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			}
+		});
+
+		var framePending = false;
+		function scheduleVisibilityUpdate() {
+			if (framePending) {
+				return;
+			}
+			framePending = true;
+			window.requestAnimationFrame(function () {
+				framePending = false;
+				updateVisibility();
+			});
+		}
+
+		main.addEventListener('scroll', scheduleVisibilityUpdate, { passive: true });
+		window.addEventListener('scroll', scheduleVisibilityUpdate, { passive: true });
+
+		window.addEventListener('resize', function () {
+			syncNavSpacer();
+			scheduleVisibilityUpdate();
+		});
+		syncNavSpacer();
+		updateVisibility();
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initBackToTop);
+	} else {
+		initBackToTop();
+	}
+})();
+
