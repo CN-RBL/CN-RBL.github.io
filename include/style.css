@@ -54,12 +54,43 @@ pre[class*="language-"],
 
 /* Code blocks */
 pre[class*="language-"] {
+    position: relative;
 	padding: 1em;
 	margin: .5em 0;
 	overflow: auto;
-	/* border: .3em solid hsl(30, 20%, 40%); */
+    border: 2px solid #4d6fae;
 	border-radius: .5em;
-	/* box-shadow: 1px 1px .5em black inset; */
+    background: rgba(0,0,0,50%);
+    box-shadow: 0 0 10px rgba(40, 100, 220, 0.18), inset 0 0 18px rgba(0, 0, 0, 0.28);
+    animation: code-border-flow 7s linear infinite;
+}
+
+pre[class*="language-"]::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    bottom: -2px;
+    left: -2px;
+    border: 2px solid #e33b4f;
+    border-radius: inherit;
+    box-shadow: 0 0 8px rgba(227, 59, 79, 0.45), 0 0 14px rgba(61, 124, 255, 0.3);
+    pointer-events: none;
+    animation: code-border-flow 7s linear infinite;
+}
+
+@keyframes code-border-flow {
+    0%, 100% { border-color: #e33b4f; box-shadow: 0 0 8px rgba(227, 59, 79, 0.45), 0 0 14px rgba(61, 124, 255, 0.3); }
+    50% { border-color: #3d7cff; box-shadow: 0 0 8px rgba(61, 124, 255, 0.45), 0 0 14px rgba(227, 59, 79, 0.3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    pre[class*="language-"] {
+        animation: none;
+    }
+    pre[class*="language-"]::before {
+        animation: none;
+    }
 }
 
 /* Inline code */

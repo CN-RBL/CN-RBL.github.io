@@ -23197,8 +23197,12 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
             return;
         }
 
-		if (currentOverlay) currentOverlay.remove();
-		if (currentRejectOverlay) currentRejectOverlay.remove();
+		if (currentOverlay && currentOverlay.parentNode) {
+			currentOverlay.parentNode.removeChild(currentOverlay);
+		}
+		if (currentRejectOverlay && currentRejectOverlay.parentNode) {
+			currentRejectOverlay.parentNode.removeChild(currentRejectOverlay);
+		}
 
         injectStyles();
         buildModal();
@@ -23219,6 +23223,10 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
     }
 
     function wireLicenseGuard() {
+		if (typeof MutationObserver === 'undefined') {
+			return;
+		}
+
         if (licenseGuardObserver) {
             licenseGuardObserver.disconnect();
         }
@@ -23416,14 +23424,16 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 		}
 
 		function syncNavSpacer() {
+			var navHeight = nav ? nav.offsetHeight : 56;
+			var copyrightHeight = copyright ? copyright.offsetHeight : 0;
 			if (nav && spacer) {
-				var navHeight = nav.offsetHeight;
 				spacer.style.height = navHeight + 'px';
+			}
+			if (document.documentElement.style.setProperty) {
 				document.documentElement.style.setProperty('--nav-used-height', navHeight + 'px');
+				document.documentElement.style.setProperty('--copyright-used-height', copyrightHeight + 'px');
 			}
-			if (copyright) {
-				document.documentElement.style.setProperty('--copyright-used-height', copyright.offsetHeight + 'px');
-			}
+			main.style.maxHeight = Math.max(120, window.innerHeight - navHeight - copyrightHeight - 5) + 'px';
 		}
 
 		var button = document.createElement('button');
@@ -23443,16 +23453,19 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 		}
 
 		button.addEventListener('click', function () {
-			main.scrollTo({ top: 0, behavior: 'smooth' });
+			main.scrollTop = 0;
 		});
 
 		var framePending = false;
+		var requestFrame = window.requestAnimationFrame || function (callback) {
+			return window.setTimeout(callback, 16);
+		};
 		function scheduleVisibilityUpdate() {
 			if (framePending) {
 				return;
 			}
 			framePending = true;
-			window.requestAnimationFrame(function () {
+			requestFrame(function () {
 				framePending = false;
 				updateVisibility();
 			});

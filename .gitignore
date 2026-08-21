@@ -1,3 +1,6 @@
 stbuild/
 mds/
 run.sh
+template.html
+.idea/
+.vscode/
