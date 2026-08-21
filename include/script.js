@@ -23410,13 +23410,19 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 		var main = document.getElementById('main');
 		var nav = document.getElementById('topnav');
 		var spacer = document.getElementById('nav-spacer');
+		var copyright = document.getElementById('copyright');
 		if (!main || document.getElementById('back-to-top')) {
 			return;
 		}
 
 		function syncNavSpacer() {
 			if (nav && spacer) {
-				spacer.style.height = nav.offsetHeight + 'px';
+				var navHeight = nav.offsetHeight;
+				spacer.style.height = navHeight + 'px';
+				document.documentElement.style.setProperty('--nav-used-height', navHeight + 'px');
+			}
+			if (copyright) {
+				document.documentElement.style.setProperty('--copyright-used-height', copyright.offsetHeight + 'px');
 			}
 		}
 
@@ -23428,12 +23434,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 		button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 11 7-7 7 7"></path><path d="M12 4v16"></path></svg>';
 		document.body.appendChild(button);
 
-		function usesMainScroll() {
-			return window.matchMedia('(min-width: 981px)').matches && main.scrollHeight > main.clientHeight;
-		}
-
 		function getScrollTop() {
-			return usesMainScroll() ? main.scrollTop : window.scrollY;
+			return main.scrollTop;
 		}
 
 		function updateVisibility() {
@@ -23441,11 +23443,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 		}
 
 		button.addEventListener('click', function () {
-			if (usesMainScroll()) {
-				main.scrollTo({ top: 0, behavior: 'smooth' });
-			} else {
-				window.scrollTo({ top: 0, behavior: 'smooth' });
-			}
+			main.scrollTo({ top: 0, behavior: 'smooth' });
 		});
 
 		var framePending = false;
@@ -23461,8 +23459,6 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 		}
 
 		main.addEventListener('scroll', scheduleVisibilityUpdate, { passive: true });
-		window.addEventListener('scroll', scheduleVisibilityUpdate, { passive: true });
-
 		window.addEventListener('resize', function () {
 			syncNavSpacer();
 			scheduleVisibilityUpdate();
