@@ -1,0 +1,618 @@
+<!-- -*- coding: utf-8 -*- -->
+<!-- 2026.2.12 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="force-rendering" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#111827">
+    <meta name="color-scheme" content="dark light">
+    <meta name="format-detection" content="telephone=no, email=no, address=no">
+    <meta name="author" content="红蓝灯">
+    <meta name="keywords" content="红蓝灯, RBL, 个人网站, 文件, 下载">
+    <meta http-equiv="Content-Language" content="zh-CN">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="这里是红蓝灯的Web秘密基地的文件储存空间，可以下载和查看RBL储存在这里的各种文件。">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="红蓝灯的秘密基地">
+    <meta property="og:title" content="文件储存空间 - 红蓝灯的秘密基地">
+    <meta property="og:description" content="这里是红蓝灯的Web秘密基地的文件储存空间，可以下载和查看RBL储存在这里的各种文件。">
+    <meta property="og:url" content="https://cn-rbl.github.io/files/">
+    <meta property="og:image" content="https://cn-rbl.github.io/include/logo.ico">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>首页 - 红蓝灯的秘密基地——文件储存空间</title>
+    <script src="../include/script.js"></script>
+
+    <!-- Font Awesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="../include/prism.css" rel="stylesheet">
+    <link href="../include/style.css" rel="stylesheet">
+    <link href="../include/logo.ico" rel="icon">
+    <link rel="canonical" href="https://cn-rbl.github.io/files/">
+
+    <style>
+        /* 树形样式附加 */
+        .tree-ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        .tree-ul ul {
+            list-style: none;
+            padding-left: 24px;
+            margin: 0;
+        }
+        .tree-item {
+            display: flex;
+            align-items: center;
+            padding: 4px 0;
+            cursor: default;
+        }
+        .tree-item .toggle {
+            width: 20px;
+            display: inline-block;
+            cursor: pointer;
+            user-select: none;
+            text-align: center;
+            color: #fbbf24; /* 文件夹箭头颜色 */
+            font-size: 0.9rem;
+        }
+        .tree-item .toggle-placeholder {
+            width: 20px;
+            display: inline-block;
+        }
+        .tree-item .icon {
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+        .tree-item .name {
+            color: var(--panel-text, #e5e7eb);
+            text-decoration: none;
+        }
+        .tree-item .name.folder {
+            cursor: pointer;
+            color: #fbbf24;
+        }
+        .tree-item .name.folder:hover {
+            text-decoration: underline;
+        }
+        .tree-item .name.file:hover {
+            text-decoration: underline;
+            color: #60a5fa;
+        }
+        .tree-item .size {
+            margin-left: 12px;
+            color: var(--panel-muted, #9ca3af);
+            font-size: 0.8rem;
+        }
+        .breadcrumb {
+            margin: 10px 0;
+            padding: 6px 12px;
+            background: var(--panel-bg, #374151);
+            border-radius: 6px;
+            word-break: break-all;
+            font-size: 0.95rem;
+        }
+        .breadcrumb a {
+            color: #60a5fa;
+            text-decoration: none;
+            margin: 0 4px;
+        }
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        .empty {
+            text-align: center;
+            color: var(--panel-muted, #9ca3af);
+            padding: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--panel-muted, #9ca3af);
+        }
+        #local-control {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        #local-control button {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        #local-control button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+
+<body class="line-numbers">
+    <nav id="topnav">
+        <!-- 导航栏，完整保留 -->
+        <div class="nav-inner">
+            <a href="../index.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M9 20v-6h6v6"/></svg></span><span>首页</span></a>
+            <a href="../articles.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4.5h9l5 5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2Z"/><path d="M14 4.5v5h5"/><path d="M8 12h8M8 16h8"/></svg></span><span>文章</span></a>
+            <a href="../about.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M4 20a8 8 0 0 1 16 0"/></svg></span><span>关于</span></a>
+            <a href="https://github.com/CN-RBL" target="_blank" rel="noopener noreferrer"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18c-4 1.2-4-2-5-2M15 22v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77 5.44 5.44 0 0 0 3.56 9c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></span><span>我的GitHub</span></a>
+            <a href="https://space.bilibili.com/3546389388724715" target="_blank" rel="noopener noreferrer"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M10 9.5 15 12l-5 2.5z"/></svg></span><span>我的B站</span></a>
+        </div>
+    </nav>
+    <div id="nav-spacer" aria-hidden="true"></div>
+    <div class="item">
+        <div id="main">
+            <h1 class="chinese funny" style="text-align: center;">Ciallo～(∠・ω< )⌒☆ 新年快乐</h1>
+            <p class="chinese" style="text-align: center;">这里是RBL的Web小窝&秘密基地的文件储存空间！在这里，你可以：</p>
+            <ul class="chinese">
+                <li>下载RBL储存在这的各种文件</li>
+                <li>查看RBL储存在这的各种文件</li>
+                <li>还有…</li>
+            </ul>
+            <br />
+            <div class="notice">
+                <h2 class="chinese" style="text-align: left;">公告</h2>
+                <hr>
+                <p class="chinese">本网站的files目录免费为EggyUI项目组提供小文件（&lt;100MB）储存支持<br />提示：此空间应用了设置，不被搜索引擎收录</p>
+            </div>
+            <br />
+            <div class="card">
+                <h2 class="chinese" style="text-align: center;">
+                    文件列表
+                    <span class="refresh-btn" id="refreshBtn" title="刷新列表"
+                        style="cursor:pointer;margin-left:12px;font-size:1rem;color:var(--panel-muted);">
+                        <i class="fas fa-sync-alt"></i>
+                    </span>
+                </h2>
+                <hr>
+                <!-- 本地模式控件 -->
+                <div id="local-control" style="display:none;">
+                    <button id="loadLocalBtn"><i class="fas fa-folder-open"></i> 加载本地文件夹</button>
+                    <span style="margin-left:10px;font-size:0.8rem;color:var(--panel-muted);">（选择 files 目录以查看真实文件）</span>
+                </div>
+                <!-- 面包屑（线上模式使用） -->
+                <div id="breadcrumb" class="breadcrumb" style="display:none;">📁 根目录</div>
+                <ul id="file_list" class="tree-ul">
+                    <!-- JavaScript 将动态填充这里 -->
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="copyright">
+        <p class="chinese">此页面为 搜索引擎安全空间</p>
+        <p class="chinese">© 2026 红蓝灯 保留所有权利</p>
+        <p class="english">© 2026 RBL All rights reserved.</p>
+    </div>
+
+    <script>
+        (function () {
+            'use strict';
+
+            // ========== 配置 ==========
+            var BLOCK_RULES = [
+                'index.html',
+                '.gitkeep',
+                'README.md'
+            ];
+            var SIZE_UNITS = ['B', 'KB', 'MB', 'GB'];
+            var PER_PAGE = 100;
+            var REPO = 'cn-rbl/cn-rbl.github.io';
+            var BASE_PATH = 'files';
+
+            // ========== 本地 Mock 数据（仅作为默认展示） ==========
+            var mockFiles = [
+                { name: '示例文件.txt', size: 2048 },
+                { name: '一张图片.png', size: 358400 },
+                { name: '压缩包.zip', size: 12582912 },
+                { name: 'PDF文档.pdf', size: 524288 },
+                { name: '代码示例.js', size: 4096 },
+                { name: '样式表.css', size: 1024 },
+                { name: '数据.json', size: 5120 },
+                { name: '子目录文件.md', size: 1024, path: 'files/subdir/子目录文件.md' }
+            ];
+
+            // ========== 全局变量 ==========
+            var localFileList = null;        // 本地加载的文件列表（原始数据）
+            var currentPath = '';            // 线上模式当前路径（相对于 BASE_PATH）
+
+            // ========== DOM 引用 ==========
+            var listEl = document.getElementById('file_list');
+            var localControl = document.getElementById('local-control');
+            var breadcrumbDiv = document.getElementById('breadcrumb');
+            var refreshBtn = document.getElementById('refreshBtn');
+            var loadLocalBtn = document.getElementById('loadLocalBtn');
+
+            // ========== 工具函数 ==========
+            function isBlocked(filename) {
+                for (var i = 0; i < BLOCK_RULES.length; i++) {
+                    var rule = BLOCK_RULES[i];
+                    if (typeof rule === 'string') {
+                        if (rule.startsWith('/') && rule.endsWith('/')) {
+                            var pattern = new RegExp(rule.slice(1, -1));
+                            if (pattern.test(filename)) return true;
+                        } else {
+                            if (filename === rule) return true;
+                        }
+                    } else if (rule instanceof RegExp) {
+                        if (rule.test(filename)) return true;
+                    } else if (typeof rule === 'function') {
+                        if (rule(filename)) return true;
+                    }
+                }
+                return false;
+            }
+
+            function getFileIcon(filename) {
+                var ext = filename.split('.').pop().toLowerCase();
+                if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'ico'].includes(ext)) return '🖼️';
+                if (['mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm'].includes(ext)) return '🎬';
+                if (['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma'].includes(ext)) return '🎵';
+                if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz', 'iso'].includes(ext)) return '📦';
+                if (['pdf'].includes(ext)) return '📄';
+                if (['doc', 'docx'].includes(ext)) return '📝';
+                if (['xls', 'xlsx', 'csv'].includes(ext)) return '📊';
+                if (['ppt', 'pptx'].includes(ext)) return '📽️';
+                if (['txt', 'log', 'md'].includes(ext)) return '📃';
+                if (['js', 'ts', 'jsx', 'tsx', 'html', 'css', 'scss', 'json', 'xml', 'yml', 'yaml', 'toml'].includes(ext))
+                    return '💻';
+                if (['exe', 'msi', 'dmg', 'pkg', 'deb', 'rpm'].includes(ext)) return '⚙️';
+                return '📄';
+            }
+
+            function formatSize(bytes) {
+                if (bytes === undefined || bytes === null) return '';
+                var size = bytes;
+                var unitIdx = 0;
+                while (size >= 1024 && unitIdx < SIZE_UNITS.length - 1) {
+                    size /= 1024;
+                    unitIdx++;
+                }
+                return size.toFixed(1) + ' ' + SIZE_UNITS[unitIdx];
+            }
+
+            function isLocal() {
+                var protocol = window.location.protocol;
+                var hostname = window.location.hostname;
+                return protocol === 'file:' || hostname === 'localhost' || hostname === '127.0.0.1';
+            }
+
+            // ========== 构建树（用于本地加载） ==========
+            function buildTree(fileList) {
+                var root = { children: {} };
+                for (var i = 0; i < fileList.length; i++) {
+                    var file = fileList[i];
+                    var parts = file.name.split('/');
+                    var current = root;
+                    for (var j = 0; j < parts.length; j++) {
+                        var part = parts[j];
+                        if (j === parts.length - 1) {
+                            // 文件
+                            if (!current.children[part]) {
+                                current.children[part] = { type: 'file', name: part, file: file };
+                            }
+                        } else {
+                            // 文件夹
+                            if (!current.children[part]) {
+                                current.children[part] = { type: 'folder', name: part, children: {} };
+                            }
+                            current = current.children[part];
+                        }
+                    }
+                }
+                return root;
+            }
+
+            // ========== 渲染树（本地模式，递归） ==========
+            function renderTree(node, container) {
+                var entries = Object.keys(node.children).sort();
+                if (entries.length === 0) {
+                    var li = document.createElement('li');
+                    li.className = 'empty';
+                    li.textContent = '（空文件夹）';
+                    container.appendChild(li);
+                    return;
+                }
+                entries.forEach(function (key) {
+                    var item = node.children[key];
+                    var li = document.createElement('li');
+                    var div = document.createElement('div');
+                    div.className = 'tree-item';
+
+                    if (item.type === 'folder') {
+                        var toggle = document.createElement('span');
+                        toggle.className = 'toggle';
+                        toggle.textContent = '▶';
+                        toggle.title = '点击展开/折叠';
+                        var icon = document.createElement('span');
+                        icon.className = 'icon';
+                        icon.textContent = '📁';
+                        var nameSpan = document.createElement('span');
+                        nameSpan.className = 'name folder';
+                        nameSpan.textContent = key;
+
+                        div.appendChild(toggle);
+                        div.appendChild(icon);
+                        div.appendChild(nameSpan);
+                        li.appendChild(div);
+
+                        var childUl = document.createElement('ul');
+                        childUl.style.display = 'none';
+                        li.appendChild(childUl);
+
+                        // 点击切换
+                        toggle.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            var isHidden = childUl.style.display === 'none';
+                            childUl.style.display = isHidden ? 'block' : 'none';
+                            toggle.textContent = isHidden ? '▼' : '▶';
+                        });
+                        // 双击触发
+                        div.addEventListener('dblclick', function () { toggle.click(); });
+
+                        renderTree(item, childUl);
+                    } else {
+                        // 文件
+                        var togglePlace = document.createElement('span');
+                        togglePlace.className = 'toggle-placeholder';
+                        togglePlace.textContent = ' ';
+                        var icon = document.createElement('span');
+                        icon.className = 'icon';
+                        icon.textContent = getFileIcon(item.file.name);
+                        var nameSpan = document.createElement('a');
+                        nameSpan.className = 'name file';
+                        nameSpan.textContent = key;
+                        nameSpan.href = item.file.blobUrl;
+                        nameSpan.download = item.file.name;
+                        nameSpan.target = '_blank';
+                        var sizeSpan = document.createElement('span');
+                        sizeSpan.className = 'size';
+                        sizeSpan.textContent = formatSize(item.file.size);
+
+                        div.appendChild(togglePlace);
+                        div.appendChild(icon);
+                        div.appendChild(nameSpan);
+                        div.appendChild(sizeSpan);
+                        li.appendChild(div);
+                    }
+                    container.appendChild(li);
+                });
+            }
+
+            // ========== 渲染目录列表（线上模式，样式与树形统一） ==========
+            function renderDirectory(items) {
+                listEl.innerHTML = '';
+                if (!items || items.length === 0) {
+                    listEl.innerHTML = '<li class="empty">📭 此目录为空</li>';
+                    return;
+                }
+                // 分离文件夹和文件
+                var folders = items.filter(function (item) { return item.type === 'dir'; });
+                var files = items.filter(function (item) { return item.type === 'file' && !isBlocked(item.name); });
+                folders.sort(function (a, b) { return a.name.localeCompare(b.name); });
+                files.sort(function (a, b) { return a.name.localeCompare(b.name); });
+                var all = folders.concat(files);
+
+                all.forEach(function (item) {
+                    var li = document.createElement('li');
+                    var div = document.createElement('div');
+                    div.className = 'tree-item';
+
+                    // 占位符（保持对齐）
+                    var placeholder = document.createElement('span');
+                    placeholder.className = 'toggle-placeholder';
+                    placeholder.textContent = ' ';
+                    var icon = document.createElement('span');
+                    icon.className = 'icon';
+                    icon.textContent = item.type === 'dir' ? '📁' : getFileIcon(item.name);
+
+                    var nameSpan;
+                    if (item.type === 'dir') {
+                        nameSpan = document.createElement('span');
+                        nameSpan.className = 'name folder';
+                        nameSpan.textContent = item.name;
+                        nameSpan.style.cursor = 'pointer';
+                        nameSpan.addEventListener('click', function () {
+                            currentPath = item.path;
+                            loadFiles();
+                        });
+                    } else {
+                        var a = document.createElement('a');
+                        a.className = 'name file';
+                        a.textContent = item.name;
+                        a.href = 'https://raw.githubusercontent.com/' + REPO + '/main/' + item.path;
+                        a.target = '_blank';
+                        nameSpan = a;
+                    }
+
+                    var sizeSpan = document.createElement('span');
+                    sizeSpan.className = 'size';
+                    sizeSpan.textContent = item.type === 'file' ? formatSize(item.size) : '';
+
+                    div.appendChild(placeholder);
+                    div.appendChild(icon);
+                    div.appendChild(nameSpan);
+                    div.appendChild(sizeSpan);
+                    li.appendChild(div);
+                    listEl.appendChild(li);
+                });
+            }
+
+            // ========== 更新面包屑（线上） ==========
+            function updateBreadcrumb() {
+                if (!isLocal()) {
+                    breadcrumbDiv.style.display = 'block';
+                    var html = '📁 <a href="#" data-path="">根目录</a>';
+                    if (currentPath) {
+                        var parts = currentPath.split('/');
+                        var pathAccum = '';
+                        parts.forEach(function (part, idx) {
+                            pathAccum += (idx === 0 ? '' : '/') + part;
+                            var isLast = (idx === parts.length - 1);
+                            if (isLast) {
+                                html += ' / ' + part;
+                            } else {
+                                html += ' / <a href="#" data-path="' + pathAccum + '">' + part + '</a>';
+                            }
+                        });
+                    }
+                    breadcrumbDiv.innerHTML = html;
+                    // 绑定点击事件
+                    breadcrumbDiv.querySelectorAll('a[data-path]').forEach(function (a) {
+                        a.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            currentPath = this.dataset.path;
+                            loadFiles();
+                        });
+                    });
+                } else {
+                    breadcrumbDiv.style.display = 'none';
+                }
+            }
+
+            // ========== 主加载函数 ==========
+            function loadFiles() {
+                // 控制本地按钮显示
+                if (isLocal()) {
+                    localControl.style.display = 'block';
+                    // 如果已有本地文件列表，直接渲染树
+                    if (localFileList && localFileList.length > 0) {
+                        var root = buildTree(localFileList);
+                        listEl.innerHTML = '';
+                        renderTree(root, listEl);
+                        updateBreadcrumb(); // 隐藏面包屑
+                        return;
+                    }
+                } else {
+                    localControl.style.display = 'none';
+                }
+
+                // 显示加载中
+                listEl.innerHTML = '<li class="loading"><i class="fas fa-spinner fa-spin"></i> 加载中...</li>';
+
+                // 本地模式且无本地列表 → 使用 Mock 数据（平铺显示，样式与线上一致）
+                if (isLocal()) {
+                    console.info('🔧 本地模式：显示示例文件（点击按钮加载真实本地文件）');
+                    var mockWithPath = mockFiles.map(function (item) {
+                        if (!item.path) {
+                            item.path = 'files/' + item.name;
+                        }
+                        return item;
+                    });
+                    // 模拟为列表形式（平铺）
+                    listEl.innerHTML = '';
+                    mockWithPath.forEach(function (file) {
+                        var li = document.createElement('li');
+                        var div = document.createElement('div');
+                        div.className = 'tree-item';
+                        var placeholder = document.createElement('span');
+                        placeholder.className = 'toggle-placeholder';
+                        placeholder.textContent = ' ';
+                        var icon = document.createElement('span');
+                        icon.className = 'icon';
+                        icon.textContent = getFileIcon(file.name);
+                        var a = document.createElement('a');
+                        a.className = 'name file';
+                        a.textContent = file.name;
+                        a.href = 'https://raw.githubusercontent.com/' + REPO + '/main/' + file.path;
+                        a.target = '_blank';
+                        var sizeSpan = document.createElement('span');
+                        sizeSpan.className = 'size';
+                        sizeSpan.textContent = formatSize(file.size);
+                        div.appendChild(placeholder);
+                        div.appendChild(icon);
+                        div.appendChild(a);
+                        div.appendChild(sizeSpan);
+                        li.appendChild(div);
+                        listEl.appendChild(li);
+                    });
+                    updateBreadcrumb(); // 隐藏面包屑
+                    return;
+                }
+
+                // ========== 线上模式：请求 GitHub API ==========
+                var apiPath = currentPath ? BASE_PATH + '/' + currentPath : BASE_PATH;
+                var apiUrl = 'https://api.github.com/repos/' + REPO + '/contents/' + apiPath + '?per_page=' + PER_PAGE;
+                fetch(apiUrl)
+                    .then(function (response) {
+                        if (!response.ok) {
+                            // 匿名调用 GitHub Contents API 限额为 60 次/小时/IP，
+                            // 触发限流（403/429）时给出明确提示而不是笼统的 HTTP 状态码
+                            if (response.status === 403 || response.status === 429) {
+                                throw new Error('GitHub API 匿名请求次数已达上限（60 次/小时），请稍后再试或点击刷新重试');
+                            }
+                            throw new Error('HTTP ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!Array.isArray(data)) {
+                            listEl.innerHTML = '<li class="empty">⚠️ 此路径不是目录</li>';
+                            return;
+                        }
+                        // 更新面包屑
+                        updateBreadcrumb();
+                        // 渲染目录
+                        renderDirectory(data);
+                    })
+                    .catch(function (err) {
+                        console.warn('⚠️ API 请求失败:', err);
+                        listEl.innerHTML = '<li class="empty">⚠️ 加载失败: ' + err.message + '</li>';
+                    });
+            }
+
+            // ========== 加载本地文件夹（手动触发） ==========
+            function loadLocalFolder() {
+                // 清除之前的 blob URL
+                if (localFileList) {
+                    localFileList.forEach(function (item) {
+                        if (item.blobUrl) URL.revokeObjectURL(item.blobUrl);
+                    });
+                    localFileList = null;
+                }
+
+                var input = document.createElement('input');
+                input.type = 'file';
+                input.webkitdirectory = true;
+                input.multiple = true;
+                input.onchange = function (e) {
+                    var files = e.target.files;
+                    if (!files || files.length === 0) return;
+                    var fileList = [];
+                    for (var i = 0; i < files.length; i++) {
+                        var file = files[i];
+                        var name = file.webkitRelativePath || file.name;
+                        fileList.push({
+                            name: name,
+                            size: file.size,
+                            file: file,
+                            blobUrl: URL.createObjectURL(file)
+                        });
+                    }
+                    localFileList = fileList;
+                    // 重新渲染
+                    loadFiles();
+                };
+                input.click();
+            }
+
+            // ========== 绑定事件 ==========
+            refreshBtn.addEventListener('click', loadFiles);
+            loadLocalBtn.addEventListener('click', loadLocalFolder);
+
+            // ========== 页面加载后执行 ==========
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                loadFiles();
+            } else {
+                document.addEventListener('DOMContentLoaded', loadFiles);
+            }
+
+        })();
+    </script>
+</body>
+</html>
