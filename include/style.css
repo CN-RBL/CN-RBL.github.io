@@ -23,7 +23,7 @@ pre[class*="language-"] {
 	text-shadow: 0 -.1em .2em black;
 	font-size: 1em;
 	text-align: left;
-	font-family: "JetBrains Mono",system-ui;
+	font-family: var(--mono-font);
 	white-space: pre;
 	word-spacing: normal;
 	word-break: normal;
@@ -316,6 +316,11 @@ span.inline-color {
 :root {
     /* 尺寸 */
     --page-margin: 15%;
+    /* 安全区水平总量（刘海屏/圆角屏），默认 0，支持的浏览器会在下方 @supports 中覆盖 */
+    --safe-x: 0px;
+
+    /* 告知浏览器本站为深色主题：让 Firefox/Chrome 的原生滚动条、表单控件统一渲染为深色 */
+    color-scheme: dark;
 
     /* 导航 */
     --nav-height: 56px;
@@ -356,11 +361,20 @@ span.inline-color {
     --license-text: #edf3ff;
 
     /* 字体 */
-    --mono-font: "JetBrains Mono", monospace;
-    --tahoma-font: Tahoma, system-ui, sans-serif;
+    --mono-font: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+    --tahoma-font: Tahoma, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
 
-    /* 背景图 */
+    /* 背景图（JPG 兜底） */
     --bg-img: url("bg.jpg");
+    /* 背景图（支持 image-set 的浏览器优先加载体积更小的 WebP） */
+    --bg-img-modern: image-set(url("bg.webp") type("image/webp"), url("bg.jpg") type("image/jpeg"));
+}
+
+/* 刘海屏/圆角屏安全区：避免横屏时内容被刘海或圆角遮挡 */
+@supports (width: calc(0px + env(safe-area-inset-left, 0px))) {
+    :root {
+        --safe-x: calc(env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px));
+    }
 }
 
 /* 基础布局与盒模型 */
@@ -402,11 +416,15 @@ body {
     /* 由 #nav-spacer 为固定导航预留空间 */
     padding-top: 0;
     background-image: var(--bg-img);
+    /* 支持 image-set 的浏览器会覆盖上一行，优先使用 WebP；不支持的浏览器忽略本行并回退到 JPG */
+    background-image: var(--bg-img-modern);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed;
     min-height: 100vh;
+    /* svh：移动端地址栏收起/展开时高度更准确（不支持时回退到上面的 100vh） */
+    min-height: 100svh;
     background-color: var(--muted-dark);
     /* 禁止页面整体垂直滚动，#main 内滚 */
     overflow-x: hidden;
@@ -416,6 +434,13 @@ body {
 }
 
 body.line-numbers { min-height: 100vh; }
+
+/* 触屏设备：background-attachment: fixed 在 iOS Safari 上性能差且滚动时抖动，退回 scroll */
+@media (hover: none) {
+    body {
+        background-attachment: scroll;
+    }
+}
 
 /* 公共卡片外观（毛玻璃） */
 #main, #copyright, .notice, .card {
@@ -434,7 +459,7 @@ body.line-numbers { min-height: 100vh; }
     position: fixed;
     left: 50%;
     transform: translateX(-50%);
-    width: min(1200px, calc(100% - 2 * var(--page-margin)));
+    width: min(1200px, calc(100% - 2 * var(--page-margin) - var(--safe-x)));
     top: 0;
     height: var(--nav-height);
     display: flex;
@@ -500,7 +525,7 @@ body.line-numbers { min-height: 100vh; }
 
 /* 主内容：流式布局，顶部紧贴导航，内部滚动 */
 #main {
-    width: min(1200px, calc(100% - 2 * var(--page-margin)));
+    width: min(1200px, calc(100% - 2 * var(--page-margin) - var(--safe-x)));
     margin-left: auto;
     margin-right: auto;
     margin-top: 0;
@@ -512,9 +537,13 @@ body.line-numbers { min-height: 100vh; }
     padding-top: 1.25rem;
     margin-bottom: calc(var(--copyright-used-height, var(--copyright-max)) + var(--gap-between));
     -webkit-overflow-scrolling: touch;
+    /* 阻止滚动链：#main 滚到头后不再带动背后页面/地址栏联动，各浏览器行为一致 */
+    overscroll-behavior: contain;
     padding-bottom: var(--gap-between);
     /* 可用高度 = 视口 - 导航高度 - 版权最大高度 - 间隙 */
     max-height: calc(100vh - var(--nav-used-height, var(--nav-height)) - var(--copyright-used-height, var(--copyright-max)) - var(--gap-between));
+    /* dvh：移动端浏览器地址栏动态高度下更准确（不支持时回退到上面的 100vh） */
+    max-height: calc(100dvh - var(--nav-used-height, var(--nav-height)) - var(--copyright-used-height, var(--copyright-max)) - var(--gap-between));
     z-index: 10;
     color: var(--panel-text);
     line-height: 1.8;
@@ -666,7 +695,7 @@ body.line-numbers { min-height: 100vh; }
     border-radius: 999px;
     font-size: 0.75rem;
     line-height: 1;
-    font-family: var(--mono-font), system-ui, sans-serif;
+    font-family: var(--mono-font);
 }
 .article-badge-hot {
     color: #ffd0a8;
@@ -734,6 +763,7 @@ body.line-numbers { min-height: 100vh; }
 
     #main {
         max-height: calc(100vh - var(--nav-used-height, var(--nav-height)) - var(--copyright-used-height, var(--copyright-max)) - var(--gap-between));
+        max-height: calc(100dvh - var(--nav-used-height, var(--nav-height)) - var(--copyright-used-height, var(--copyright-max)) - var(--gap-between));
         overflow-y: auto;
     }
 }
@@ -798,6 +828,7 @@ body.line-numbers { min-height: 100vh; }
     #main {
         padding: 1rem 1rem 1.25rem;
         max-height: calc(100vh - var(--nav-used-height, var(--nav-height)) - var(--copyright-used-height, var(--copyright-max)) - var(--gap-between));
+        max-height: calc(100dvh - var(--nav-used-height, var(--nav-height)) - var(--copyright-used-height, var(--copyright-max)) - var(--gap-between));
         overflow-y: auto;
         clip-path: inset(0 round var(--card-radius));
     }
@@ -886,6 +917,7 @@ body.line-numbers { min-height: 100vh; }
     #main {
         padding: 0.85rem 0.85rem 1rem;
         max-height: calc(100vh - var(--nav-used-height, var(--nav-height)) - var(--copyright-used-height, var(--copyright-max)) - var(--gap-between));
+        max-height: calc(100dvh - var(--nav-used-height, var(--nav-height)) - var(--copyright-used-height, var(--copyright-max)) - var(--gap-between));
         clip-path: inset(0 round var(--card-radius));
     }
 
@@ -972,7 +1004,7 @@ body.line-numbers { min-height: 100vh; }
     position: fixed;
     left: 50%;
     transform: translateX(-50%);
-    width: min(1200px, calc(100% - 2 * var(--page-margin)));
+    width: min(1200px, calc(100% - 2 * var(--page-margin) - var(--safe-x)));
     bottom: 0;
     min-height: var(--copyright-min);
     max-height: var(--copyright-max);
@@ -1034,7 +1066,7 @@ body.line-numbers { min-height: 100vh; }
 }
 .english {
 	color: var(--muted);
-	font-family: "JetBrains Mono", monospace;
+	font-family: var(--mono-font);
 }
 
 .fl { text-align: left; }
@@ -1042,7 +1074,7 @@ body.line-numbers { min-height: 100vh; }
 .fr { text-align: right; }
 a { color: var(--muted); }
 .funny:active { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.85), 0 0 16px rgba(255,255,255,0.5); }
-code, pre{ font-family: var(--mono-font), system-ui; }
+code, pre{ font-family: var(--mono-font); }
 
 /* 使带 class="chinese" 的有序/无序列表整体居中，且点/序号与文本一起居中显示 */
 hr { border: 1px solid var(--muted); }

@@ -30,83 +30,50 @@ Prism.languages.python={comment:{pattern:/(^|[^\\])#.*/,lookbehind:!0,greedy:!0}
 
 /* #region */
 /**
- * 许可协议弹窗 - 单 JS 文件（风格适配原站）
- * 强制用户滚动至底部并停留 6.5 秒后方可同意
- * 状态保存在 localStorage 中，同意后不再显示
+ * MIT 协议提示弹窗（非强制版）
+ * - 首次访问时展示一次，仅作告知用途
+ * - 点击"我知道了"、按 ESC 或点击遮罩即可关闭，不阻止任何操作
+ * - 状态保存在 localStorage 中，关闭后不再显示
  */
 (function() {
     'use strict';
 
-    // ========== 配置项 ==========
-    const CONFIG = {
-        storageKey: 'licenseAgreed',          // localStorage 键名
-        minReadTime: 6500,                    // 最短阅读时间（毫秒）
-        licenseSub: '请仔细阅读，阅读完全文后方可同意',
-        // 协议内容（支持 HTML）
-        licenseHTML: `
-            <h1>MIT 协议（The MIT License）</h1>
-			<h2>中文</h2>
-			<p>
-版权所有 © 2026 RBL<br/><br/>
-特此免费授予任何获得本软件及相关文档文件（“软件”）副本的人使用该软件的权利，包括不限于使用、复制、修改、合并、发布、分发、再许可和/或销售该软件的副本，并允许向其提供软件的人在遵守以下条件的前提下如此行事：<br/><br/>
-上述版权声明和本许可声明应包含在软件的所有副本或主要部分中。<br/><br/>
-该软件按“原样”提供，不附带任何形式的明示或暗示的保证，包括但不限于对适销性、特定用途适用性及非侵权性的保证。在任何情况下，作者或版权持有人均不对因使用该软件或与该软件的其他交易而引起的任何索赔、损害或其他责任承担责任，无论是在合同、侵权行为或其他方面。</p>
-			<h2>English</h2>
-			<p>
-Copyright © 2026 RBL</br></br>
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:<br/><br/>
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.<br/><br/>
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
-        `
-    };
+    var STORAGE_KEY = 'licenseNoticeClosed';
 
-    // ========== 状态变量 ==========
-    let isScrolledToBottom = false;
-    let isTimeElapsed = false;
-    let overlay, rejectOverlay, btnAgree, btnReject, btnReconsider;
-    let licenseText, progressBar, readProgress;
-    let licenseGuardObserver = null;
-	let gateMode = 'main';
-	let rejectPending = false;
-	let rejectCheckTimer = null;
-	let guardRepairScheduled = false;
-	let readTimer = null;
-
-    // ========== 工具函数 ==========
-    function hasAgreed() {
+    function hasClosed() {
         try {
-            return localStorage.getItem(CONFIG.storageKey) === 'true';
+            return localStorage.getItem(STORAGE_KEY) === 'true';
         } catch (error) {
             return false;
         }
     }
 
-    function saveAgreed() {
+    function saveClosed() {
         try {
-            localStorage.setItem(CONFIG.storageKey, 'true');
+            localStorage.setItem(STORAGE_KEY, 'true');
         } catch (error) {
-            // 浏览器隐私模式下忽略，避免异常中断页面交互
+            // 浏览器隐私模式下忽略：每次访问都会提示（不影响使用）
         }
     }
 
     // ========== 动态注入样式（统一使用站点主题变量） ==========
     function injectStyles() {
-		if (document.getElementById('licenseModalStyles')) {
-			return;
-		}
-        const style = document.createElement('style');
-		style.id = 'licenseModalStyles';
+        if (document.getElementById('licenseModalStyles')) {
+            return;
+        }
+        var style = document.createElement('style');
+        style.id = 'licenseModalStyles';
         style.textContent = `
-            /* ===== 遮罩层（全屏暗色毛玻璃） ===== */
+            /* ===== 遮罩层 ===== */
             .license-overlay {
                 position: fixed;
                 top: 0;
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: var(--license-overlay-bg, rgba(0, 0, 0, 0.12));
+                background: rgba(0, 0, 0, 0.45);
                 -webkit-backdrop-filter: blur(3px);
-				backdrop-filter: blur(3px);
+                backdrop-filter: blur(3px);
                 display: none;
                 justify-content: center;
                 align-items: center;
@@ -118,20 +85,17 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
             }
 
             /* ===== 弹窗卡片 ===== */
-			.license-modal,
-			.license-reject-card {
-				background: var(--license-card-bg, rgba(12, 16, 20, 0.42));
+            .license-modal {
+                background: var(--license-card-bg, rgba(12, 16, 20, 0.42));
                 -webkit-backdrop-filter: blur(14px);
-				backdrop-filter: blur(14px);
+                backdrop-filter: blur(14px);
                 border-radius: 28px;
                 width: 100%;
+                max-width: 560px;
+                padding: 32px 28px 28px;
                 box-shadow: 0 40px 80px var(--panel-shadow, rgba(0, 0, 0, 0.45));
-				border: 1px solid var(--license-border, rgba(255, 255, 255, 0.1));
-				box-sizing: border-box;
-			}
-			.license-modal {
-				max-width: 560px;
-				padding: 32px 28px 28px;
+                border: 1px solid var(--license-border, rgba(255, 255, 255, 0.1));
+                box-sizing: border-box;
                 animation: licenseFadeIn 0.35s ease-out;
                 max-height: 90vh;
                 display: flex;
@@ -142,105 +106,42 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 to   { opacity: 1; transform: scale(1) translateY(0); }
             }
 
-			@keyframes licenseIntroItem {
-				from { opacity: 0; transform: translateY(12px); }
-				to { opacity: 1; transform: translateY(0); }
-			}
-
             /* ===== 头部 ===== */
             .license-modal-header {
-				display: flex;
-				flex-direction: column;
-				align-items: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
                 text-align: center;
                 margin-bottom: 12px;
             }
-			.license-modal-header > * {
-				display: block;
-				width: auto;
-				max-width: 100%;
-				align-self: center;
-				text-align: center !important;
-			}
             .license-modal-header .icon {
-				font-size: 40px;
-				display: grid;
-				place-items: center;
-				width: fit-content;
-				min-width: 0;
-				height: 48px;
-				margin-left: auto;
-				margin-right: auto;
-				line-height: 1;
-				font-family: "JetBrains Mono", system-ui, sans-serif;
-				font-variant-emoji: text;
+                font-size: 40px;
+                line-height: 1;
                 margin-bottom: 4px;
-				opacity: 0;
-				animation: licenseIntroItem 0.45s ease-out 0.18s forwards;
             }
             .license-modal-header h2 {
                 font-size: 24px;
                 font-weight: 700;
                 color: var(--panel-text, #e0e0e0);
                 margin: 0;
-				line-height: 1.2;
-                font-family: "JetBrains Mono", system-ui, sans-serif;
-				opacity: 0;
-				animation: licenseIntroItem 0.45s ease-out 0.38s forwards;
+                line-height: 1.2;
+                font-family: var(--mono-font, "JetBrains Mono", monospace);
             }
             .license-modal-header .sub {
                 font-size: 14px;
                 color: var(--license-muted, #999999);
-                margin-top: 2px;
-				width: 100%;
-                font-family: Tahoma, system-ui, sans-serif;
-				opacity: 0;
-				animation: licenseIntroItem 0.45s ease-out 0.58s forwards;
-			}
-			.license-modal-header .intro-copy {
-				color: var(--license-text, #edf3ff);
-				font-size: 16px;
-				margin: 2px 0 0;
-				width: 100%;
-				text-align: center !important;
-				opacity: 0;
-				animation: licenseIntroItem 0.45s ease-out 0.48s forwards;
+                margin-top: 4px;
+                font-family: var(--tahoma-font, Tahoma, sans-serif);
             }
 
-            /* ===== 进度条 ===== */
-            .license-progress-area {
-                margin: 6px 0 12px;
-            }
-            .license-progress-label {
-                display: flex;
-                justify-content: space-between;
-                font-size: 13px;
-                color: var(--license-muted, #999999);
-                margin-bottom: 4px;
-                font-family: Tahoma, system-ui, sans-serif;
-            }
-            .license-progress-bar-bg {
-                height: 5px;
-                background: var(--license-progress-bg, rgba(255, 255, 255, 0.08));
-                border-radius: 6px;
-                overflow: hidden;
-            }
-            .license-progress-bar-fill {
-                width: 0%;
-                height: 100%;
-                background: var(--panel-accent, #2b6cb0);
-                border-radius: 6px;
-                transition: width 0.15s ease;
-            }
-
-            /* ===== 协议文本（滚动区） ===== */
+            /* ===== 协议文本（可滚动，阅读与否由访客自行决定） ===== */
             .license-text {
                 background: var(--license-text-bg, rgba(0, 0, 0, 0.35));
                 -webkit-backdrop-filter: blur(4px);
-				backdrop-filter: blur(4px);
+                backdrop-filter: blur(4px);
                 border-radius: 16px;
                 padding: 18px 20px;
-                max-height: 200px;
+                max-height: 260px;
                 overflow-y: auto;
                 border: 1px solid var(--license-border, rgba(255, 255, 255, 0.08));
                 font-size: 14px;
@@ -248,618 +149,183 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
                 color: var(--license-text, #cccccc);
                 text-align: left;
                 margin-bottom: 16px;
-                font-family: Tahoma, system-ui, sans-serif;
+                font-family: var(--tahoma-font, Tahoma, sans-serif);
             }
-            .license-text::-webkit-scrollbar {
-				width: 8px;
-				height: 8px;
-            }
-            .license-text::-webkit-scrollbar-track {
-				background: rgba(255,255,255,0.02);
-				border-radius: 4px;
-            }
-            .license-text::-webkit-scrollbar-thumb {
-				background: rgba(255,255,255,0.10);
-				border-radius: 4px;
-            }
-			.license-text {
-				scrollbar-width: thin;
-				scrollbar-color: rgba(255,255,255,0.10) rgba(255,255,255,0.02);
-			}
+            .license-text::-webkit-scrollbar { width: 8px; height: 8px; }
+            .license-text::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
+            .license-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 4px; }
+            .license-text { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.10) rgba(255,255,255,0.02); }
             .license-text h1, .license-text h2, .license-text h3 {
                 color: var(--panel-text, #e0e0e0);
                 margin-top: 12px;
                 margin-bottom: 6px;
-                font-family: "JetBrains Mono", system-ui, sans-serif;
+                font-family: var(--mono-font, "JetBrains Mono", monospace);
             }
             .license-text h1:first-child,
             .license-text h2:first-child,
             .license-text h3:first-child {
                 margin-top: 0;
             }
-            .license-text p {
-                margin-bottom: 8px;
-            }
-            .license-text ul {
-                padding-left: 20px;
-                margin-bottom: 10px;
-            }
-            .license-text ul li {
-                margin-bottom: 4px;
-            }
+            .license-text p { margin-bottom: 8px; }
 
-            /* ===== 按钮组 ===== */
+            /* ===== 按钮 ===== */
             .license-actions {
                 display: flex;
                 gap: 14px;
-                margin-top: 4px;
             }
-            .license-actions button {
+            .license-btn-close {
                 flex: 1;
                 padding: 14px 0;
-                border: none;
-                border-radius: 16px;
-                font-size: 17px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 6px;
-                font-family: "JetBrains Mono", system-ui, sans-serif;
-                background: rgba(255, 255, 255, 0.05);
-                color: var(--license-muted, #999999);
-                backdrop-filter: blur(4px);
-                -webkit-backdrop-filter: blur(4px);
-                border: 1px solid var(--license-border, rgba(255, 255, 255, 0.08));
-				-webkit-appearance: none;
-				appearance: none;
-            }
-            .license-actions button:focus-visible {
-                outline: 2px solid var(--panel-accent, #2b6cb0);
-                outline-offset: 2px;
-            }
-            .license-btn-agree {
-                background: rgba(43, 108, 176, 0.25);
-                color: var(--license-button-disabled, #666666);
-                opacity: 0.6;
-                cursor: not-allowed;
-                border-color: rgba(43, 108, 176, 0.15);
-            }
-            .license-btn-agree.enabled {
-                background: var(--panel-accent, #2b6cb0);
-                color: var(--license-button-text, #ffffff);
-                opacity: 1;
-                cursor: pointer;
-                border-color: var(--panel-accent, #2b6cb0);
-                box-shadow: 0 4px 14px rgba(43, 108, 176, 0.30);
-            }
-            .license-btn-agree.enabled:hover {
-                background: var(--panel-accent-strong, #1a4f8b);
-                transform: translateY(-2px);
-                box-shadow: 0 8px 24px rgba(43, 108, 176, 0.45);
-            }
-            .license-btn-agree.enabled:active {
-                transform: scale(0.97);
-            }
-
-            .license-btn-reject {
-                background: rgba(255, 255, 255, 0.04);
-                color: var(--license-muted, #999999);
-                border-color: var(--license-border, rgba(255, 255, 255, 0.08));
-            }
-            .license-btn-reject:hover {
-                background: rgba(255, 70, 70, 0.15);
-                color: var(--panel-danger, #ff6b6b);
-                border-color: rgba(255, 70, 70, 0.25);
-                transform: translateY(-2px);
-                text-shadow: 0 0 8px rgba(255, 70, 70, 0.3);
-            }
-            .license-btn-reject:active {
-                transform: scale(0.97);
-            }
-
-            /* ===== 拒绝覆盖层 ===== */
-            .license-reject-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-				background: var(--license-overlay-bg, rgba(0, 0, 0, 0.12));
-                -webkit-backdrop-filter: blur(3px);
-				backdrop-filter: blur(3px);
-                display: none;
-                justify-content: center;
-                align-items: center;
-                z-index: 100000;
-                padding: 20px;
-            }
-            .license-reject-overlay.active {
-                display: flex;
-            }
-            .license-reject-card {
-                max-width: 420px;
-				padding: 32px 28px 28px;
-                text-align: center;
-                animation: licenseFadeIn 0.3s ease-out;
-            }
-            .license-reject-card .big-icon {
-				font-size: 56px;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				width: 100%;
-				height: 68px;
-				text-align: center;
-				line-height: 1;
-				font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-                margin-bottom: 10px;
-            }
-            .license-reject-card h3 {
-                font-size: 24px;
-                font-weight: 700;
-                color: var(--panel-text, #e0e0e0);
-                margin-bottom: 8px;
-                font-family: "JetBrains Mono", system-ui, sans-serif;
-            }
-            .license-reject-card p {
-                font-size: 16px;
-                color: var(--license-muted, #999999);
-                line-height: 1.6;
-                margin-bottom: 24px;
-                font-family: Tahoma, system-ui, sans-serif;
-            }
-            .license-reject-card .btn-reconsider {
-                background: var(--panel-accent, #2b6cb0);
-                color: var(--license-button-text, #ffffff);
-                border: none;
-                padding: 14px 36px;
                 border-radius: 16px;
                 font-size: 17px;
                 font-weight: 600;
                 cursor: pointer;
                 transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-                box-shadow: 0 4px 14px rgba(43, 108, 176, 0.25);
-                font-family: "JetBrains Mono", system-ui, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 6px;
+                font-family: var(--mono-font, "JetBrains Mono", monospace);
+                background: var(--panel-accent, #2b6cb0);
+                color: var(--license-button-text, #ffffff);
+                border: 1px solid var(--panel-accent, #2b6cb0);
+                box-shadow: 0 4px 14px rgba(43, 108, 176, 0.30);
+                -webkit-appearance: none;
+                appearance: none;
             }
-            .license-reject-card .btn-reconsider:hover {
+            .license-btn-close:hover {
                 background: var(--panel-accent-strong, #1a4f8b);
                 transform: translateY(-2px);
                 box-shadow: 0 8px 24px rgba(43, 108, 176, 0.45);
             }
-            .license-reject-card .btn-reconsider:active {
-                transform: scale(0.97);
+            .license-btn-close:active { transform: scale(0.97); }
+            .license-btn-close:focus-visible {
+                outline: 2px solid var(--panel-accent, #2b6cb0);
+                outline-offset: 2px;
             }
 
-			@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-                .license-overlay,
-                .license-modal,
-                .license-text,
-                .license-reject-overlay,
-                .license-reject-card {
-                    background: rgba(10, 12, 16, 0.92);
-                    backdrop-filter: none;
-                    -webkit-backdrop-filter: none;
-                }
+            @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+                .license-overlay { background: rgba(10, 12, 16, 0.92); backdrop-filter: none; -webkit-backdrop-filter: none; }
+                .license-modal { background: rgba(10, 12, 16, 0.92); backdrop-filter: none; -webkit-backdrop-filter: none; }
             }
 
             /* ===== 响应式 ===== */
             @media (max-width: 640px) {
-                .license-modal {
-                    padding: 24px 16px 20px;
-                }
-                .license-modal-header h2 {
-					text-align: center;
-                    font-size: 21px;
-                }
-                .license-text {
-                    max-height: 150px;
-                    font-size: 13px;
-                    padding: 14px 16px;
-                }
-                .license-actions {
-                    flex-direction: column;
-                    gap: 10px;
-                }
-                .license-reject-card {
-                    padding: 32px 20px 28px;
-                }
+                .license-modal { padding: 24px 16px 20px; }
+                .license-modal-header h2 { font-size: 21px; }
+                .license-text { max-height: 180px; font-size: 13px; padding: 14px 16px; }
             }
             @media (max-width: 400px) {
-                .license-modal {
-                    padding: 18px 12px 16px;
-                }
-                .license-text {
-                    max-height: 120px;
-                    font-size: 12px;
-                    padding: 12px 14px;
-                }
-                .license-actions button {
-                    font-size: 15px;
-                    padding: 12px 0;
-                }
+                .license-modal { padding: 18px 12px 16px; }
+                .license-text { max-height: 150px; font-size: 12px; padding: 12px 14px; }
+                .license-btn-close { font-size: 15px; padding: 12px 0; }
             }
 
-			@media (prefers-reduced-motion: reduce) {
-				.license-modal,
-				.license-modal-header .icon,
-				.license-modal-header h2,
-				.license-modal-header .intro-copy,
-				.license-modal-header .sub {
-					animation: none;
-					opacity: 1;
-					transform: none;
-				}
-			}
-
+            @media (prefers-reduced-motion: reduce) {
+                .license-modal { animation: none; }
+            }
         `;
         document.head.appendChild(style);
     }
 
     // ========== 构建 DOM ==========
     function buildModal() {
-        // ---- 遮罩（主弹窗） ----
-        overlay = document.createElement('div');
+        var overlay = document.createElement('div');
         overlay.className = 'license-overlay';
         overlay.id = 'licenseOverlay';
 
-        const modal = document.createElement('div');
+        var modal = document.createElement('div');
         modal.className = 'license-modal';
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-label', 'MIT 协议说明');
 
-        // 头部
-        const header = document.createElement('div');
+        var header = document.createElement('div');
         header.className = 'license-modal-header';
-        header.innerHTML = `
-			<span class="icon" aria-hidden="true">📄︎</span>
-			<h2>Hi!</h2>
-			<div class="intro-copy">我们需要你同意一段协议</div>
-            <div class="sub">${CONFIG.licenseSub}</div>
-        `;
+        header.innerHTML =
+            '<span class="icon" aria-hidden="true">📄</span>' +
+            '<h2>关于本站的协议</h2>' +
+            '<div class="sub">本站基于 MIT 协议开放，仅供了解，无需强制同意</div>';
         modal.appendChild(header);
 
-        // 进度条区域
-        const progressArea = document.createElement('div');
-        progressArea.className = 'license-progress-area';
-        progressArea.innerHTML = `
-            <div class="license-progress-label">
-                <span>📖 阅读进度</span>
-                <span id="licenseReadProgress">0%</span>
-            </div>
-            <div class="license-progress-bar-bg">
-                <div class="license-progress-bar-fill" id="licenseProgressBar"></div>
-            </div>
-        `;
-        modal.appendChild(progressArea);
-
-        // 协议文本（可滚动）
-        const textDiv = document.createElement('div');
+        var textDiv = document.createElement('div');
         textDiv.className = 'license-text';
         textDiv.id = 'licenseText';
+        textDiv.tabIndex = 0;
         textDiv.innerHTML = CONFIG.licenseHTML;
         modal.appendChild(textDiv);
 
-        // 按钮组
-        const actions = document.createElement('div');
+        var actions = document.createElement('div');
         actions.className = 'license-actions';
-
-        const agreeBtn = document.createElement('button');
-        agreeBtn.className = 'license-btn-agree';
-        agreeBtn.id = 'licenseBtnAgree';
-        agreeBtn.disabled = true;
-        agreeBtn.textContent = '⏳ 请开始阅读协议';
-        actions.appendChild(agreeBtn);
-
-        const rejectBtn = document.createElement('button');
-        rejectBtn.className = 'license-btn-reject';
-        rejectBtn.id = 'licenseBtnReject';
-        rejectBtn.textContent = '✋ 但是我拒绝！';
-        actions.appendChild(rejectBtn);
+        var closeBtn = document.createElement('button');
+        closeBtn.className = 'license-btn-close';
+        closeBtn.id = 'licenseBtnClose';
+        closeBtn.type = 'button';
+        closeBtn.textContent = '👍 我知道了，继续访问！';
+        actions.appendChild(closeBtn);
 
         modal.appendChild(actions);
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        // ---- 拒绝覆盖层 ----
-        rejectOverlay = document.createElement('div');
-        rejectOverlay.className = 'license-reject-overlay';
-        rejectOverlay.id = 'licenseRejectOverlay';
-        rejectOverlay.innerHTML = `
-            <div class="license-reject-card">
-				<span class="big-icon" aria-hidden="true">🚫</span>
-                <h3>您拒绝了许可协议</h3>
-                <p>您必须同意许可协议才能继续访问本网站。<br />如果您改变主意，可以点击下方按钮重新考虑。</p>
-                <button class="btn-reconsider" id="licenseBtnReconsider">🔄 重新考虑</button>
-            </div>
-        `;
-        document.body.appendChild(rejectOverlay);
-
-        // 缓存 DOM 引用
-        btnAgree = document.getElementById('licenseBtnAgree');
-        btnReject = document.getElementById('licenseBtnReject');
-        btnReconsider = document.getElementById('licenseBtnReconsider');
-        licenseText = document.getElementById('licenseText');
-        progressBar = document.getElementById('licenseProgressBar');
-        readProgress = document.getElementById('licenseReadProgress');
-    }
-
-    // ========== 核心逻辑 ==========
-    function updateAgreeButton() {
-        if (isScrolledToBottom && isTimeElapsed) {
-            btnAgree.disabled = false;
-            btnAgree.classList.add('enabled');
-            btnAgree.textContent = '✅ 可以！我同意！';
-        } else {
-            btnAgree.disabled = true;
-            btnAgree.classList.remove('enabled');
-            if (!isScrolledToBottom || !isTimeElapsed) {
-                btnAgree.textContent = '📖 请认真阅读协议！';
-            } else {
-                btnAgree.textContent = '⏳ 请开始阅读协议';
-            }
-        }
-    }
-
-    function handleScroll() {
-        const scrollTop = licenseText.scrollTop;
-        const scrollHeight = licenseText.scrollHeight - licenseText.clientHeight;
-        let percent = 0;
-		if (scrollHeight > 0) {
-            percent = Math.min(100, Math.round((scrollTop / scrollHeight) * 100));
-		} else {
-			percent = 100;
-        }
-        readProgress.textContent = percent + '%';
-        progressBar.style.width = percent + '%';
-
-        if (percent >= 100) {
-			isScrolledToBottom = true;
-			updateAgreeButton();
-        }
-    }
-
-    function startTimer() {
-		if (readTimer) {
-			clearTimeout(readTimer);
-		}
-		readTimer = setTimeout(function() {
-			readTimer = null;
-            isTimeElapsed = true;
-            updateAgreeButton();
-        }, CONFIG.minReadTime);
-    }
-
-    function ensureLicenseGate() {
-        if (hasAgreed()) {
-            return;
-        }
-
-		const currentOverlay = document.getElementById('licenseOverlay');
-		const currentRejectOverlay = document.getElementById('licenseRejectOverlay');
-		const currentAgreeButton = document.getElementById('licenseBtnAgree');
-		const currentReconsiderButton = document.getElementById('licenseBtnReconsider');
-
-		if (currentOverlay && currentRejectOverlay && currentAgreeButton && currentReconsiderButton) {
-			overlay = currentOverlay;
-			rejectOverlay = currentRejectOverlay;
-			btnAgree = currentAgreeButton;
-			btnReconsider = currentReconsiderButton;
-			if (gateMode === 'reject') {
-				overlay.classList.remove('active');
-				rejectOverlay.classList.add('active');
-			} else {
-				rejectOverlay.classList.remove('active');
-				overlay.classList.add('active');
-			}
-			document.body.style.overflow = 'hidden';
-            return;
-        }
-
-		if (currentOverlay && currentOverlay.parentNode) {
-			currentOverlay.parentNode.removeChild(currentOverlay);
-		}
-		if (currentRejectOverlay && currentRejectOverlay.parentNode) {
-			currentRejectOverlay.parentNode.removeChild(currentRejectOverlay);
-		}
-
-        injectStyles();
-        buildModal();
-
-        licenseText.addEventListener('scroll', handleScroll);
-        btnAgree.addEventListener('click', handleAgree);
-        btnReject.addEventListener('click', handleReject);
-        btnReconsider.addEventListener('click', handleReconsider);
-
-		if (gateMode === 'reject') {
-			rejectOverlay.classList.add('active');
-		} else {
-			overlay.classList.add('active');
-		}
-        document.body.style.overflow = 'hidden';
-        startTimer();
-        updateAgreeButton();
-    }
-
-    function wireLicenseGuard() {
-		if (typeof MutationObserver === 'undefined') {
-			return;
-		}
-
-        if (licenseGuardObserver) {
-            licenseGuardObserver.disconnect();
-        }
-
-        licenseGuardObserver = new MutationObserver(function() {
-            if (hasAgreed()) {
-                if (licenseGuardObserver) {
-                    licenseGuardObserver.disconnect();
-                }
-                return;
-            }
-
-			const currentOverlay = document.getElementById('licenseOverlay');
-			const currentRejectOverlay = document.getElementById('licenseRejectOverlay');
-			const agreeButtonPresent = !!document.getElementById('licenseBtnAgree');
-			const reconsiderButtonPresent = !!document.getElementById('licenseBtnReconsider');
-			const gateMissing = !currentOverlay || !currentRejectOverlay || !agreeButtonPresent || !reconsiderButtonPresent;
-			const mainGateHidden = gateMode === 'main' && currentOverlay && !currentOverlay.classList.contains('active');
-			const rejectGateHidden = gateMode === 'reject' && currentRejectOverlay && !currentRejectOverlay.classList.contains('active');
-
-			if (gateMissing || mainGateHidden || rejectGateHidden) {
-				if (guardRepairScheduled) {
-					return;
-				}
-				guardRepairScheduled = true;
-                setTimeout(function() {
-					guardRepairScheduled = false;
-					if (!hasAgreed()) {
-                        ensureLicenseGate();
-                    }
-                }, 0);
-            }
-        });
-
-		licenseGuardObserver.observe(document.body, { attributes: true, childList: true, subtree: true, attributeFilter: ['class'] });
-    }
-
-    function handleAgree() {
-        if (btnAgree.disabled) return;
-        saveAgreed();
-		gateMode = 'main';
-		rejectPending = false;
-        overlay.classList.remove('active');
-		rejectOverlay.classList.remove('active');
-		if (readTimer) {
-			clearTimeout(readTimer);
-			readTimer = null;
-		}
-        document.body.style.overflow = '';
-    }
-
-    function tryCloseWindow() {
-		if (rejectPending) {
-			return true;
-		}
-
-		rejectPending = true;
-        try {
-            window.close();
-            let checkCount = 0;
-            const maxChecks = 6;
-			rejectCheckTimer = setInterval(function() {
-                checkCount++;
-                if (window.closed) {
-					clearInterval(rejectCheckTimer);
-					rejectCheckTimer = null;
-                    return;
-                }
-                if (checkCount >= maxChecks) {
-					clearInterval(rejectCheckTimer);
-					rejectCheckTimer = null;
-                    setTimeout(function() {
-                        if (!window.closed) {
-							gateMode = 'reject';
-                            rejectOverlay.classList.add('active');
-                            document.body.style.overflow = 'hidden';
-                        }
-                    }, 10);
-                }
-            }, 200);
-            return true;
-        } catch (e) {
-			rejectPending = false;
-            return false;
-        }
-    }
-
-    function handleReject() {
-		if (rejectPending || gateMode === 'reject' || rejectOverlay.classList.contains('active')) {
-			return;
-		}
-		gateMode = 'reject';
-		btnReject.disabled = true;
-        overlay.classList.remove('active');
-        const closed = tryCloseWindow();
-        if (!closed) {
-            rejectOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-    }
-
-    function handleReconsider() {
-		gateMode = 'main';
-		rejectPending = false;
-		if (rejectCheckTimer) {
-			clearInterval(rejectCheckTimer);
-			rejectCheckTimer = null;
-		}
-		if (readTimer) {
-			clearTimeout(readTimer);
-			readTimer = null;
-		}
-		overlay.classList.add('active');
-        rejectOverlay.classList.remove('active');
-        // 重置滚动和计时状态
-        isScrolledToBottom = false;
-        isTimeElapsed = false;
-        licenseText.scrollTop = 0;
-        readProgress.textContent = '0%';
-        progressBar.style.width = '0%';
-		btnReject.disabled = false;
-        updateAgreeButton();
-        startTimer();
-        document.body.style.overflow = 'hidden';
+        return { overlay: overlay, closeBtn: closeBtn };
     }
 
     // ========== 初始化 ==========
     function init() {
-        if (hasAgreed()) {
-            return; // 已同意，不弹窗
+        if (hasClosed()) {
+            return; // 已关闭过，不再显示
         }
 
-        // 注入样式
         injectStyles();
-        // 构建 DOM
-        buildModal();
+        var parts = buildModal();
+        parts.overlay.classList.add('active');
 
-        // 绑定事件
-        licenseText.addEventListener('scroll', handleScroll);
-        btnAgree.addEventListener('click', handleAgree);
-        btnReject.addEventListener('click', handleReject);
-        btnReconsider.addEventListener('click', handleReconsider);
-        wireLicenseGuard();
-
-        // 阻止 ESC 关闭
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                if (overlay.classList.contains('active') || rejectOverlay.classList.contains('active')) {
-                    e.preventDefault();
+        function close() {
+            saveClosed();
+            parts.overlay.classList.remove('active');
+            // 延迟移除 DOM，让淡出动画有机会执行（当前无淡出动画则立即清理亦可）
+            setTimeout(function () {
+                if (parts.overlay.parentNode) {
+                    parts.overlay.parentNode.removeChild(parts.overlay);
                 }
+            }, 300);
+            document.removeEventListener('keydown', onKeydown);
+        }
+
+        function onKeydown(e) {
+            if (e.key === 'Escape') {
+                close();
+            }
+        }
+
+        parts.closeBtn.addEventListener('click', close);
+        // 点击遮罩空白处也可关闭（非强制）
+        parts.overlay.addEventListener('click', function (e) {
+            if (e.target === parts.overlay) {
+                close();
             }
         });
-        // 点击遮罩不可关闭（强制按钮操作）
-        overlay.addEventListener('click', function(e) {
-            if (e.target === overlay) { /* 无操作 */ }
-        });
-        rejectOverlay.addEventListener('click', function(e) {
-            if (e.target === rejectOverlay) { /* 无操作 */ }
-        });
+        document.addEventListener('keydown', onKeydown);
 
-        // 显示弹窗
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-
-        // 启动计时器
-        startTimer();
-        // 初始按钮状态
-		handleScroll();
-        updateAgreeButton();
-
-        console.log('许可协议弹窗已加载（风格已适配）');
+        console.log('MIT 协议提示弹窗已加载（非强制模式）');
     }
+
+    // ========== 协议内容 ==========
+    var CONFIG = {
+        licenseHTML:
+            '<h1>MIT 协议（The MIT License）</h1>' +
+            '<h2>中文</h2>' +
+            '<p>版权所有 © 2026 RBL</p>' +
+            '<p>特此免费授予任何获得本软件及相关文档文件（“软件”）副本的人使用该软件的权利，包括不限于使用、复制、修改、合并、发布、分发、再许可和/或销售该软件的副本，并允许向其提供软件的人在遵守以下条件的前提下如此行事：</p>' +
+            '<p>上述版权声明和本许可声明应包含在软件的所有副本或主要部分中。</p>' +
+            '<p>该软件按“原样”提供，不附带任何形式的明示或暗示的保证。在任何情况下，作者或版权持有人均不对因使用该软件而引起的任何索赔、损害或其他责任承担责任。</p>' +
+            '<h2>English</h2>' +
+            '<p>Copyright © 2026 RBL</p>' +
+            '<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>' +
+            '<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>' +
+            '<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.</p>'
+    };
 
     // 页面加载完成后执行
     if (document.readyState === 'loading') {
@@ -914,6 +380,13 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 		}
 
 		button.addEventListener('click', function () {
+			// 平滑滚动：现代浏览器使用原生 smooth，不支持时回退为直接置顶
+			if (typeof main.scrollTo === 'function') {
+				try {
+					main.scrollTo({ top: 0, behavior: 'smooth' });
+					return;
+				} catch (e) { /* 某些旧浏览器传对象会抛错，回退到下面的直接赋值 */ }
+			}
 			main.scrollTop = 0;
 		});
 
